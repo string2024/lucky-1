@@ -60,7 +60,6 @@ const Index = () => {
             <motion.div key="fortune" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
               <FortunePage onNavigate={(tab) => setActiveTab(tab)} />
             </motion.div>
-            </motion.div>
           )}
           {activeTab === "lotto" && (
             <motion.div key="lotto" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
