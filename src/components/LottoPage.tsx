@@ -2,7 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTodayFortune, generateLottoNumbers, generateBonusNumbers, getNumberColor } from "@/lib/fortune";
 import { saveNumbers, shareNumbers } from "@/lib/storage";
-import { Share2, Download, Gift } from "lucide-react";
+import { getFreeBonusCount, useFreeBonusToken } from "@/lib/attendance";
+import { Share2, Download, Gift, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
 const LottoBall = ({ num, delay }: { num: number; delay: number }) => (
@@ -23,8 +24,18 @@ const LottoPage = () => {
   const [bonusNumbers, setBonusNumbers] = useState<number[] | null>(null);
   const [showRewardAd, setShowRewardAd] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const [freeBonusCount, setFreeBonusCount] = useState(getFreeBonusCount());
 
   const handleReveal = () => setRevealed(true);
+
+  const handleUseFreeBonus = () => {
+    const used = useFreeBonusToken();
+    if (used) {
+      setFreeBonusCount(getFreeBonusCount());
+      setBonusNumbers(generateBonusNumbers(fortunes));
+      toast.success("🎁 무료 보너스 번호가 생성되었어요!");
+    }
+  };
 
   const handleRewardAd = () => {
     setShowRewardAd(true);
@@ -111,14 +122,33 @@ const LottoPage = () => {
           <div className="text-center">
             <Gift className="mx-auto mb-2 text-primary" size={28} />
             <p className="font-semibold text-foreground mb-1">보너스 번호 받기</p>
-            <p className="text-xs text-muted-foreground mb-3">광고 시청 후 추가 번호 1세트를 받아보세요</p>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={handleRewardAd}
-              className="w-full py-3 gradient-gold rounded-xl text-primary-foreground font-bold text-sm"
-            >
-              🎬 광고 보고 번호 받기
-            </motion.button>
+
+            {freeBonusCount > 0 ? (
+              <>
+                <p className="text-xs text-muted-foreground mb-3">
+                  <Ticket size={12} className="inline mr-1" />
+                  무료 이용권 {freeBonusCount}개 보유 중!
+                </p>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleUseFreeBonus}
+                  className="w-full py-3 bg-primary rounded-xl text-primary-foreground font-bold text-sm"
+                >
+                  🎁 무료로 번호 받기
+                </motion.button>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-muted-foreground mb-3">광고 시청 후 추가 번호 1세트를 받아보세요</p>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleRewardAd}
+                  className="w-full py-3 gradient-gold rounded-xl text-primary-foreground font-bold text-sm"
+                >
+                  🎬 광고 보고 번호 받기
+                </motion.button>
+              </>
+            )}
           </div>
         </motion.div>
       )}
