@@ -1,10 +1,25 @@
 const ATTENDANCE_KEY = "gajyeobwa_attendance";
+const FREE_BONUS_KEY = "gajyeobwa_free_bonus";
 
 interface AttendanceData {
   dates: string[];
   streak: number;
   lastDate: string;
+  badges: string[];
 }
+
+export type Badge = {
+  icon: string;
+  name: string;
+  requirement: number;
+};
+
+export const BADGES: Badge[] = [
+  { icon: "🍀", name: "행운의 새싹", requirement: 7 },
+  { icon: "⭐", name: "럭키 스타", requirement: 14 },
+  { icon: "💎", name: "다이아몬드", requirement: 21 },
+  { icon: "👑", name: "로또 킹", requirement: 30 },
+];
 
 function getTodayStr(): string {
   const d = new Date();
