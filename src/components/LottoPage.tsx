@@ -95,7 +95,7 @@ const LottoPage = () => {
                 <LottoBall key={num} num={num} delay={i * 0.12} />
               ))}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mb-3">
               <button
                 onClick={() => handleSave(mainNumbers, "main")}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium"
