@@ -87,8 +87,8 @@ export function useTabSwitchAd() {
   const onTabSwitch = useCallback(() => {
     setTabSwitchCount((prev) => {
       const next = prev + 1;
-      // Show ad every 3rd tab switch
-      if (next % 3 === 0) {
+      // Show ad every 5th tab switch
+      if (next % 5 === 0) {
         setShowAd(true);
       }
       return next;
