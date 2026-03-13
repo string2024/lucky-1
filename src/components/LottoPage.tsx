@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getTodayFortune, generateLottoNumbers, generateBonusNumbers, getNumberColor } from "@/lib/fortune";
 import { saveNumbers, shareNumbers } from "@/lib/storage";
 import { getFreeBonusCount, useFreeBonusToken } from "@/lib/attendance";
+import InterstitialAd from "@/components/InterstitialAd";
 import { Share2, Download, Gift, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,8 +26,16 @@ const LottoPage = () => {
   const [showRewardAd, setShowRewardAd] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [freeBonusCount, setFreeBonusCount] = useState(getFreeBonusCount());
+  const [showLottoAd, setShowLottoAd] = useState(false);
 
-  const handleReveal = () => setRevealed(true);
+  const handleReveal = () => {
+    setShowLottoAd(true);
+  };
+
+  const handleLottoAdClose = () => {
+    setShowLottoAd(false);
+    setRevealed(true);
+  };
 
   const handleUseFreeBonus = () => {
     const used = useFreeBonusToken();
@@ -212,6 +221,13 @@ const LottoPage = () => {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Lotto Interstitial Ad */}
+      <AnimatePresence>
+        {showLottoAd && (
+          <InterstitialAd variant="lotto" onClose={handleLottoAdClose} />
         )}
       </AnimatePresence>
     </div>
