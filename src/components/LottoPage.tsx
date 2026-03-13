@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getTodayFortune, generateLottoNumbers, generateBonusNumbers, getNumberColor } from "@/lib/fortune";
 import { saveNumbers, shareNumbers } from "@/lib/storage";
 import { getFreeBonusCount, useFreeBonusToken } from "@/lib/attendance";
-import InterstitialAd from "@/components/InterstitialAd";
+
 import { Share2, Download, Gift, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,16 +26,8 @@ const LottoPage = () => {
   const [showRewardAd, setShowRewardAd] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [freeBonusCount, setFreeBonusCount] = useState(getFreeBonusCount());
-  const [showLottoAd, setShowLottoAd] = useState(false);
 
-  const handleReveal = () => {
-    setShowLottoAd(true);
-  };
-
-  const handleLottoAdClose = () => {
-    setShowLottoAd(false);
-    setRevealed(true);
-  };
+  const handleReveal = () => setRevealed(true);
 
   const handleUseFreeBonus = () => {
     const used = useFreeBonusToken();
@@ -103,7 +95,7 @@ const LottoPage = () => {
                 <LottoBall key={num} num={num} delay={i * 0.12} />
               ))}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mb-3">
               <button
                 onClick={() => handleSave(mainNumbers, "main")}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium"
@@ -120,6 +112,19 @@ const LottoPage = () => {
           </>
         )}
       </div>
+
+      {/* Native Ad after number reveal */}
+      {revealed && (
+        <div className="bg-card rounded-2xl p-4 mb-4 border border-border">
+          <div className="flex items-center gap-1 mb-2">
+            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">AD</span>
+          </div>
+          <div className="gradient-gold-soft rounded-xl p-4 text-center">
+            <p className="text-sm font-medium text-secondary-foreground">🍀 행운을 나누면 두 배!</p>
+            <p className="text-xs text-muted-foreground mt-1">친구에게 공유하고 함께 당첨되세요</p>
+          </div>
+        </div>
+      )}
 
       {/* Bonus Numbers */}
       {revealed && !bonusNumbers && (
@@ -224,12 +229,8 @@ const LottoPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Lotto Interstitial Ad */}
-      <AnimatePresence>
-        {showLottoAd && (
-          <InterstitialAd variant="lotto" onClose={handleLottoAdClose} />
-        )}
-      </AnimatePresence>
+
+
     </div>
   );
 };
