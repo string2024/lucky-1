@@ -37,7 +37,7 @@ function loadData(): AttendanceData {
     const raw = localStorage.getItem(ATTENDANCE_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  return { dates: [], streak: 0, lastDate: "" };
+  return { dates: [], streak: 0, lastDate: "", badges: [] };
 }
 
 function saveData(data: AttendanceData) {
