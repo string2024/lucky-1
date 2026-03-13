@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getTodayFortune, generateLottoNumbers, generateBonusNumbers, getNumberColor } from "@/lib/fortune";
 import { saveNumbers, shareNumbers } from "@/lib/storage";
 import { getFreeBonusCount, useFreeBonusToken } from "@/lib/attendance";
+import InterstitialAd from "@/components/InterstitialAd";
 import { Share2, Download, Gift, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
