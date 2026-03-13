@@ -223,6 +223,13 @@ const LottoPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Lotto Interstitial Ad */}
+      <AnimatePresence>
+        {showLottoAd && (
+          <InterstitialAd variant="lotto" onClose={handleLottoAdClose} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
