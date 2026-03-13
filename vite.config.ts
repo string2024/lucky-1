@@ -5,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: mode === "production" ? "/lucky-fortune-generator/" : "/",
   server: {
     host: "::",
     port: 8080,
