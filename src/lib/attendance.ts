@@ -44,7 +44,7 @@ function saveData(data: AttendanceData) {
   localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(data));
 }
 
-export function checkIn(): { streak: number; alreadyChecked: boolean } {
+export function checkIn(): { streak: number; alreadyChecked: boolean; rewardGranted?: boolean; newBadges?: string[] } {
   const data = loadData();
   const today = getTodayStr();
 
