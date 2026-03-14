@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { getTodayFortune, getTotalScore, getOverallMessage } from "@/lib/fortune";
 import { getAttendanceInfo } from "@/lib/attendance";
 import { Ticket, Calendar, ArrowRight } from "lucide-react";
+import { Button } from "@toss/tds-mobile";
 
 interface FortunePageProps {
   onNavigate?: (tab: "lotto" | "attendance") => void;
@@ -87,18 +88,20 @@ const FortunePage = ({ onNavigate }: FortunePageProps) => {
       </div>
 
       {/* CTA: Go to Lotto */}
-      <motion.button
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        whileTap={{ scale: 0.97 }}
-        onClick={() => onNavigate?.("lotto")}
-        className="w-full mt-5 py-4 gradient-gold rounded-2xl flex items-center justify-center gap-2 text-primary-foreground font-bold text-base"
+        className="mt-5"
       >
-        <Ticket size={18} />
-        이 운세로 행운 번호 뽑기
-        <ArrowRight size={16} />
-      </motion.button>
+        <Button
+          size="xlarge"
+          style={{ width: "100%" }}
+          onClick={() => onNavigate?.("lotto")}
+        >
+          🎱 이 운세로 행운 번호 뽑기
+        </Button>
+      </motion.div>
     </div>
   );
 };

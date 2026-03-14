@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getTodayFortune, generateLottoNumbers, generateBonusNumbers, getNumberColor } from "@/lib/fortune";
 import { saveNumbers, shareNumbers } from "@/lib/storage";
 import { getFreeBonusCount, useFreeBonusToken } from "@/lib/attendance";
+import { Button } from "@toss/tds-mobile";
 
 import { Share2, Download, Gift, Ticket } from "lucide-react";
 import { toast } from "sonner";
@@ -81,13 +82,13 @@ const LottoPage = () => {
         </div>
 
         {!revealed ? (
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+          <Button
+            size="xlarge"
+            style={{ width: "100%" }}
             onClick={handleReveal}
-            className="w-full py-4 gradient-gold rounded-xl text-primary-foreground font-bold text-lg"
           >
             🎱 번호 확인하기
-          </motion.button>
+          </Button>
         ) : (
           <>
             <div className="flex justify-center gap-2 mb-4">
@@ -143,24 +144,24 @@ const LottoPage = () => {
                   <Ticket size={12} className="inline mr-1" />
                   무료 이용권 {freeBonusCount}개 보유 중!
                 </p>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
+                <Button
+                  size="large"
+                  style={{ width: "100%" }}
                   onClick={handleUseFreeBonus}
-                  className="w-full py-3 bg-primary rounded-xl text-primary-foreground font-bold text-sm"
                 >
                   🎁 무료로 번호 받기
-                </motion.button>
+                </Button>
               </>
             ) : (
               <>
                 <p className="text-xs text-muted-foreground mb-3">광고 시청 후 추가 번호 1세트를 받아보세요</p>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
+                <Button
+                  size="large"
+                  style={{ width: "100%" }}
                   onClick={handleRewardAd}
-                  className="w-full py-3 gradient-gold rounded-xl text-primary-foreground font-bold text-sm"
                 >
                   🎬 광고 보고 번호 받기
-                </motion.button>
+                </Button>
               </>
             )}
           </div>
