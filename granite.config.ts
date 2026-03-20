@@ -5,14 +5,14 @@ export default defineConfig({
   brand: {
     displayName: '가져봐 1등',
     primaryColor: '#3182F6',
-    icon: '', // TODO: 토스 콘솔 앱 정보에서 아이콘 이미지 우클릭 → URL 복사 후 입력
+    icon: 'https://static.toss.im/appsintoss/24537/2a2c5894-5380-44a4-ae7d-90423ede5c53.png',
   },
   web: {
     host: 'localhost',
     port: 5173,
     commands: {
       dev: 'vite',
-      build: 'tsc -b && vite build',
+      build: 'vite build',
     },
   },
   permissions: [],
