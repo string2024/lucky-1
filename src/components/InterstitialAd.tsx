@@ -41,22 +41,28 @@ const InterstitialAd = ({ onClose }: InterstitialAdProps) => {
 // 탭 전환 시 전면광고 훅
 export function useTabSwitchAd() {
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const [showAdNotice, setShowAdNotice] = useState(false);
   const [showAd, setShowAd] = useState(false);
 
   const onTabSwitch = useCallback(() => {
     setTabSwitchCount((prev) => {
       const next = prev + 1;
-      // 5번 탭 전환마다 광고 노출
+      // 5번 탭 전환마다 광고 노출 (사전 고지 먼저)
       if (next % 5 === 0) {
-        setShowAd(true);
+        setShowAdNotice(true);
       }
       return next;
     });
   }, []);
 
+  const onNoticeComplete = useCallback(() => {
+    setShowAdNotice(false);
+    setShowAd(true);
+  }, []);
+
   const closeAd = useCallback(() => setShowAd(false), []);
 
-  return { showAd, onTabSwitch, closeAd };
+  return { showAd, showAdNotice, onTabSwitch, closeAd, onNoticeComplete };
 }
 
 export default InterstitialAd;

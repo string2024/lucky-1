@@ -140,7 +140,7 @@ const LottoPage = ({ onSaveWithAd }: LottoPageProps) => {
                 onClick={() => handleSave(mainNumbers, "main")}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium"
               >
-                <Download size={14} /> 저장
+                <Download size={14} /> 광고 후 저장
               </button>
               <button
                 onClick={() => handleShare(mainNumbers)}
@@ -227,7 +227,7 @@ const LottoPage = ({ onSaveWithAd }: LottoPageProps) => {
               onClick={() => handleSave(bonusNumbers, "bonus")}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium"
             >
-              <Download size={14} /> 저장
+              <Download size={14} /> 광고 후 저장
             </button>
             <button
               onClick={() => handleShare(bonusNumbers)}

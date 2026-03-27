@@ -18,7 +18,7 @@ const BannerAd = () => {
   }, []);
 
   return (
-    <div className="fixed bottom-[52px] left-0 right-0 z-30">
+    <div className="fixed bottom-[88px] left-0 right-0 z-30">
       <div className="max-w-[480px] mx-auto">
         <div ref={containerRef} style={{ width: "100%", minHeight: "96px" }} />
       </div>

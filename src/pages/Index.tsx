@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import FortunePage from "@/components/FortunePage";
 import LottoPage from "@/components/LottoPage";
@@ -11,20 +11,53 @@ import InterstitialAd, { useTabSwitchAd } from "@/components/InterstitialAd";
 
 type Tab = "fortune" | "lotto" | "attendance" | "saved";
 
+// 광고 사전 고지 컴포넌트
+const AdNotice = ({ onDone }: { onDone: () => void }) => {
+  const stableDone = useCallback(onDone, [onDone]);
+  useEffect(() => {
+    const t = setTimeout(stableDone, 1800);
+    return () => clearTimeout(t);
+  }, [stableDone]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center pb-16"
+    >
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="bg-white rounded-2xl px-6 py-4 mx-4 shadow-2xl text-center"
+      >
+        <p className="text-sm font-semibold text-foreground mb-0.5">광고가 잠시 표시됩니다</p>
+        <p className="text-xs text-muted-foreground">광고 시청 후 이용이 가능해요</p>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const Index = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [showInterstitial, setShowInterstitial] = useState(false);
+  const [showSaveAdNotice, setShowSaveAdNotice] = useState(false);
   const [pendingSave, setPendingSave] = useState<(() => void) | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("fortune");
-  const { showAd: showTabAd, onTabSwitch, closeAd: closeTabAd } = useTabSwitchAd();
+  const { showAd: showTabAd, showAdNotice: showTabAdNotice, onTabSwitch, closeAd: closeTabAd, onNoticeComplete } = useTabSwitchAd();
 
   const handleSplashDone = () => {
     setShowSplash(false);
   };
 
-  // 저장 버튼 클릭 → 전면광고 → 저장 완료
+  // 저장 버튼 클릭 → 사전 고지 → 전면광고 → 저장 완료
   const handleSaveWithAd = (saveFn: () => void) => {
     setPendingSave(() => saveFn);
+    setShowSaveAdNotice(true);
+  };
+
+  const handleSaveAdNoticeDone = () => {
+    setShowSaveAdNotice(false);
     setShowInterstitial(true);
   };
 
@@ -49,10 +82,24 @@ const Index = () => {
 
   return (
     <div className="min-h-dvh flex flex-col bg-background">
+      {/* 저장 광고 사전 고지 */}
+      <AnimatePresence>
+        {showSaveAdNotice && (
+          <AdNotice onDone={handleSaveAdNoticeDone} />
+        )}
+      </AnimatePresence>
+
       {/* Save Interstitial Ad */}
       <AnimatePresence>
         {showInterstitial && (
           <InterstitialAd onClose={handleInterstitialClose} />
+        )}
+      </AnimatePresence>
+
+      {/* 탭 전환 광고 사전 고지 */}
+      <AnimatePresence>
+        {showTabAdNotice && (
+          <AdNotice onDone={onNoticeComplete} />
         )}
       </AnimatePresence>
 
@@ -64,7 +111,7 @@ const Index = () => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className="flex-1 pb-36">
+      <div className="flex-1 pb-[200px]">
         <AnimatePresence mode="wait">
           {activeTab === "fortune" && (
             <motion.div key="fortune" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
