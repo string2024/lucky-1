@@ -4,13 +4,13 @@ import { getTodayFortune, generateLottoNumbers, generateBonusNumbers, getNumberC
 import { saveNumbers, shareNumbers } from "@/lib/storage";
 import { getFreeBonusCount, useFreeBonusToken } from "@/lib/attendance";
 import { Button } from "@toss/tds-mobile";
-import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-bridge";
+import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-framework";
 
 import { Share2, Download, Gift, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
-// 테스트 ID (출시 직전 실제 ID로 교체: ait.v2.live.6f0047c507dd40aa)
-const REWARD_AD_ID = "ait-ad-test-rewarded-id";
+// 실 광고 ID (콘솔에서 발급받은 보상형 광고 그룹 ID)
+const REWARD_AD_ID = "ait.v2.live.6f0047c507dd40aa";
 
 const LottoBall = ({ num, delay }: { num: number; delay: number }) => (
   <motion.div
