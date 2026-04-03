@@ -1,8 +1,8 @@
 import { useEffect, useCallback, useState } from "react";
-import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-bridge";
+import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-framework";
 
-// 테스트 ID (출시 직전 실제 ID로 교체: ait.v2.live.1baffae39b8e4cb0)
-const AD_GROUP_ID = "ait-ad-test-interstitial-id";
+// 실 광고 ID (콘솔에서 발급받은 전면 광고 그룹 ID)
+const AD_GROUP_ID = "ait.v2.live.1baffae39b8e4cb0";
 
 interface InterstitialAdProps {
   onClose: () => void;
@@ -16,22 +16,29 @@ const InterstitialAd = ({ onClose }: InterstitialAdProps) => {
       return;
     }
 
-    loadFullScreenAd({
+    // 광고 로드
+    const unregister = loadFullScreenAd({
       options: { adGroupId: AD_GROUP_ID },
-      onEvent: () => {
-        // 광고 로드 완료 → 즉시 노출
-        showFullScreenAd({
-          options: { adGroupId: AD_GROUP_ID },
-          onEvent: (event) => {
-            if (event.type === "dismissed" || event.type === "failedToShow") {
-              onClose();
-            }
-          },
-          onError: () => onClose(),
-        });
+      onEvent: (event) => {
+        if (event.type === "loaded") {
+          // 광고 로드 완료 → 노출
+          showFullScreenAd({
+            options: { adGroupId: AD_GROUP_ID },
+            onEvent: (showEvent) => {
+              if (showEvent.type === "dismissed" || showEvent.type === "failedToShow") {
+                onClose();
+              }
+            },
+            onError: () => onClose(),
+          });
+        }
       },
       onError: () => onClose(),
     });
+
+    return () => {
+      unregister();
+    };
   }, [onClose]);
 
   // SDK가 네이티브로 렌더링하므로 null 반환

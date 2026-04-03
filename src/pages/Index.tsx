@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { closeView } from "@apps-in-toss/web-framework";
 import FortunePage from "@/components/FortunePage";
 import LottoPage from "@/components/LottoPage";
 import AttendancePage from "@/components/AttendancePage";
@@ -45,6 +46,26 @@ const Index = () => {
   const [pendingSave, setPendingSave] = useState<(() => void) | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("fortune");
   const { showAd: showTabAd, showAdNotice: showTabAdNotice, onTabSwitch, closeAd: closeTabAd, onNoticeComplete } = useTabSwitchAd();
+
+  // 뒤로가기(popstate) 시 메인 탭이면 closeView로 미니앱 종료
+  useEffect(() => {
+    // 초기 히스토리 엔트리 추가 (뒤로가기 감지용)
+    window.history.pushState({ miniapp: true }, "");
+
+    const handlePopState = () => {
+      if (activeTab !== "fortune") {
+        // 다른 탭에 있으면 메인(운세)탭으로 이동
+        setActiveTab("fortune");
+        window.history.pushState({ miniapp: true }, "");
+      } else {
+        // 메인 탭에서 뒤로가기 → 미니앱 종료
+        closeView();
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [activeTab]);
 
   const handleSplashDone = () => {
     setShowSplash(false);
