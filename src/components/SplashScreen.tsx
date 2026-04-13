@@ -15,7 +15,7 @@ const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
 
 const SplashScreen = ({ onDone }: SplashScreenProps) => {
   useEffect(() => {
-    const timer = setTimeout(onDone, 2800);
+    const timer = setTimeout(onDone, 1500);
     return () => clearTimeout(timer);
   }, [onDone]);
 
@@ -80,21 +80,6 @@ const SplashScreen = ({ onDone }: SplashScreenProps) => {
         오늘의 운세로 행운 번호를 받아보세요
       </motion.p>
 
-      {/* 로딩 바 */}
-      <motion.div
-        className="absolute bottom-16 w-36 h-0.5 bg-white/10 rounded-full overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-      >
-        <motion.div
-          className="h-full rounded-full"
-          style={{ background: "linear-gradient(90deg, #f59e0b, #fbbf24)" }}
-          initial={{ width: "0%" }}
-          animate={{ width: "100%" }}
-          transition={{ delay: 1, duration: 1.6, ease: "easeInOut" }}
-        />
-      </motion.div>
     </div>
   );
 };

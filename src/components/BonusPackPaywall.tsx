@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@toss/tds-mobile";
-import { requestPurchase, IAP_SKUS, isIapSupported } from "@/lib/iap";
+import { requestPurchase, IAP_SKUS, isIapSupported, getIapProducts } from "@/lib/iap";
 
 interface BonusPackPaywallProps {
   onSuccess: () => void;
@@ -11,11 +11,24 @@ interface BonusPackPaywallProps {
 
 const BonusPackPaywall = ({ onSuccess, onWatchAd, onClose }: BonusPackPaywallProps) => {
   const [loading, setLoading] = useState(false);
+  const [displayAmount, setDisplayAmount] = useState("990원");
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    getIapProducts().then((products) => {
+      const product = products.find((p) => p.sku === IAP_SKUS.BONUS_5PACK);
+      if (product?.displayAmount) setDisplayAmount(product.displayAmount);
+    }).catch(() => {});
+
+    return () => {
+      cleanupRef.current?.();
+    };
+  }, []);
 
   const handlePurchase = () => {
     if (!isIapSupported()) return;
     setLoading(true);
-    requestPurchase({
+    cleanupRef.current = requestPurchase({
       sku: IAP_SKUS.BONUS_5PACK,
       onSuccess: () => {
         setLoading(false);
@@ -53,7 +66,7 @@ const BonusPackPaywall = ({ onSuccess, onWatchAd, onClose }: BonusPackPaywallPro
         <div className="bg-primary/5 rounded-2xl p-4 text-center mb-6">
           <p className="text-3xl font-extrabold text-primary mb-1">5회</p>
           <p className="text-sm text-muted-foreground">보너스 번호 즉시 생성권</p>
-          <p className="text-lg font-bold text-foreground mt-2">990원</p>
+          <p className="text-lg font-bold text-foreground mt-2">{displayAmount}</p>
         </div>
 
         <div className="space-y-3">
@@ -63,7 +76,7 @@ const BonusPackPaywall = ({ onSuccess, onWatchAd, onClose }: BonusPackPaywallPro
             disabled={loading || !isIapSupported()}
             style={{ width: "100%" }}
           >
-            {loading ? "처리 중..." : "이용권 구매하기 (990원)"}
+            {loading ? "처리 중..." : `이용권 구매하기 (${displayAmount})`}
           </Button>
 
           <Button

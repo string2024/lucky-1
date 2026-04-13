@@ -7,7 +7,7 @@ import { Button } from "@toss/tds-mobile";
 import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-framework";
 import BonusPackPaywall from "@/components/BonusPackPaywall";
 import { getBonusTokenCount, useBonusToken } from "@/lib/iapStorage";
-import { isIapSupported } from "@/lib/iap";
+import { isIapSupported, getIapProducts, IAP_SKUS } from "@/lib/iap";
 
 import { Share2, Download, Gift, Ticket } from "lucide-react";
 import { toast } from "sonner";
@@ -42,9 +42,14 @@ const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium }: LottoPage
   const [revealed, setRevealed] = useState(false);
   const [freeBonusCount, setFreeBonusCount] = useState(getFreeBonusCount());
   const [iapBonusTokens, setIapBonusTokens] = useState(0);
+  const [bonusPackPrice, setBonusPackPrice] = useState("990원");
 
   useEffect(() => {
     getBonusTokenCount().then(setIapBonusTokens);
+    getIapProducts().then((products) => {
+      const p = products.find((p) => p.sku === IAP_SKUS.BONUS_5PACK);
+      if (p?.displayAmount) setBonusPackPrice(p.displayAmount);
+    }).catch(() => {});
   }, []);
 
   const handleReveal = () => setRevealed(true);
@@ -230,7 +235,7 @@ const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium }: LottoPage
                 </Button>
                 {isIapSupported() && (
                   <Button size="large" variant="secondary" style={{ width: "100%" }} onClick={() => setShowBonusPaywall(true)}>
-                    🎟 이용권 구매 (990원)
+                    🎟 이용권 구매 ({bonusPackPrice})
                   </Button>
                 )}
               </div>

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@toss/tds-mobile";
-import { requestPurchase, IAP_SKUS, isIapSupported } from "@/lib/iap";
+import { requestPurchase, IAP_SKUS, isIapSupported, getIapProducts } from "@/lib/iap";
 
 interface PremiumPaywallProps {
   onSuccess: () => void;
@@ -10,11 +10,24 @@ interface PremiumPaywallProps {
 
 const PremiumPaywall = ({ onSuccess, onClose }: PremiumPaywallProps) => {
   const [loading, setLoading] = useState(false);
+  const [displayAmount, setDisplayAmount] = useState("3,300원");
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    getIapProducts().then((products) => {
+      const product = products.find((p) => p.sku === IAP_SKUS.PREMIUM_PASS);
+      if (product?.displayAmount) setDisplayAmount(product.displayAmount);
+    }).catch(() => {});
+
+    return () => {
+      cleanupRef.current?.();
+    };
+  }, []);
 
   const handlePurchase = () => {
     if (!isIapSupported()) return;
     setLoading(true);
-    requestPurchase({
+    cleanupRef.current = requestPurchase({
       sku: IAP_SKUS.PREMIUM_PASS,
       onSuccess: () => {
         setLoading(false);
@@ -63,8 +76,7 @@ const PremiumPaywall = ({ onSuccess, onClose }: PremiumPaywallProps) => {
         </div>
 
         <div className="text-center mb-6">
-          <p className="text-xs text-muted-foreground line-through mb-0.5">9,900원</p>
-          <p className="text-2xl font-extrabold text-primary">3,300원</p>
+          <p className="text-2xl font-extrabold text-primary">{displayAmount}</p>
           <p className="text-xs text-muted-foreground">1회 결제, 영구 이용</p>
         </div>
 

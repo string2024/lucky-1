@@ -11,31 +11,75 @@ import BannerAd from "@/components/BannerAd";
 import InterstitialAd, { useTabSwitchAd } from "@/components/InterstitialAd";
 import PremiumPaywall from "@/components/PremiumPaywall";
 import { hasPremiumPass } from "@/lib/iapStorage";
+import { isIapSupported, recoverPendingOrders } from "@/lib/iap";
 
 type Tab = "fortune" | "lotto" | "attendance" | "saved";
 
-// 광고 사전 고지 컴포넌트
-const AdNotice = ({ onDone }: { onDone: () => void }) => {
-  const stableDone = useCallback(onDone, [onDone]);
-  useEffect(() => {
-    const t = setTimeout(stableDone, 1800);
-    return () => clearTimeout(t);
-  }, [stableDone]);
+// 광고 직전 업셀 컴포넌트 — 광고 보기 vs 프리미엄 선택
+const AdUpsellNotice = ({
+  onWatchAd,
+  onPremium,
+}: {
+  onWatchAd: () => void;
+  onPremium?: () => void;
+}) => {
+  const showPremiumOption = onPremium && isIapSupported();
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center pb-16"
+      className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center"
     >
       <motion.div
-        initial={{ y: 20, opacity: 0 }}
+        initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="bg-white rounded-2xl px-6 py-4 mx-4 shadow-2xl text-center"
+        exit={{ y: 40, opacity: 0 }}
+        className="bg-white rounded-t-3xl w-full px-6 pt-5 pb-8"
       >
-        <p className="text-sm font-semibold text-foreground mb-0.5">광고가 잠시 표시됩니다</p>
-        <p className="text-xs text-muted-foreground">광고 시청 후 이용이 가능해요</p>
+        <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+
+        {showPremiumOption ? (
+          <>
+            <p className="text-base font-extrabold text-foreground text-center mb-1">
+              광고를 없애고 싶으신가요?
+            </p>
+            <p className="text-xs text-muted-foreground text-center mb-5">
+              프리미엄 패스 한 번으로 모든 광고가 사라져요
+            </p>
+            <div className="space-y-2.5">
+              <button
+                onClick={onPremium}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm text-white"
+                style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)" }}
+              >
+                ✨ 프리미엄 패스 — 광고 영구 제거 (3,300원)
+              </button>
+              <button
+                onClick={onWatchAd}
+                className="w-full py-3 rounded-2xl bg-gray-100 text-gray-500 text-sm font-medium"
+              >
+                광고 보기
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-sm font-semibold text-foreground text-center mb-0.5">
+              광고가 잠시 표시돼요
+            </p>
+            <p className="text-xs text-muted-foreground text-center mb-4">
+              광고 시청 후 이용이 가능해요
+            </p>
+            <button
+              onClick={onWatchAd}
+              className="w-full py-3 rounded-2xl bg-gray-100 text-gray-600 text-sm font-medium"
+            >
+              확인
+            </button>
+          </>
+        )}
       </motion.div>
     </motion.div>
   );
@@ -48,20 +92,24 @@ const Index = () => {
   const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
   const [pendingSave, setPendingSave] = useState<(() => void) | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("fortune");
+  const [isPremium, setIsPremium] = useState(false);
   const { showAd: showTabAd, showAdNotice: showTabAdNotice, onTabSwitch, closeAd: closeTabAd, onNoticeComplete } = useTabSwitchAd();
+
+  useEffect(() => {
+    hasPremiumPass().then(setIsPremium);
+    // 결제 완료 전 앱 종료로 미지급된 주문 복구
+    recoverPendingOrders().then(() => hasPremiumPass().then(setIsPremium));
+  }, []);
 
   // 뒤로가기(popstate) 시 메인 탭이면 closeView로 미니앱 종료
   useEffect(() => {
-    // 초기 히스토리 엔트리 추가 (뒤로가기 감지용)
     window.history.pushState({ miniapp: true }, "");
 
     const handlePopState = () => {
       if (activeTab !== "fortune") {
-        // 다른 탭에 있으면 메인(운세)탭으로 이동
         setActiveTab("fortune");
         window.history.pushState({ miniapp: true }, "");
       } else {
-        // 메인 탭에서 뒤로가기 → 미니앱 종료
         closeView();
       }
     };
@@ -70,14 +118,13 @@ const Index = () => {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [activeTab]);
 
-  const handleSplashDone = () => {
-    setShowSplash(false);
-  };
+  const handleSplashDone = () => setShowSplash(false);
 
   // 저장 버튼 클릭 → 프리미엄이면 즉시 저장, 아니면 광고 플로우
   const handleSaveWithAd = async (saveFn: () => void) => {
     const premium = await hasPremiumPass();
     if (premium) {
+      setIsPremium(true);
       saveFn();
       return;
     }
@@ -85,9 +132,16 @@ const Index = () => {
     setShowSaveAdNotice(true);
   };
 
+  // 저장 광고 직전 업셀 — "광고 보기" 선택
   const handleSaveAdNoticeDone = () => {
     setShowSaveAdNotice(false);
     setShowInterstitial(true);
+  };
+
+  // 저장 광고 직전 업셀 — "프리미엄" 선택
+  const handleSaveAdNoticePremium = () => {
+    setShowSaveAdNotice(false);
+    setShowPremiumPaywall(true);
   };
 
   const handleInterstitialClose = () => {
@@ -100,11 +154,23 @@ const Index = () => {
 
   const handlePremiumSuccess = () => {
     setShowPremiumPaywall(false);
-    // 대기 중인 저장 작업이 있으면 즉시 실행
+    setIsPremium(true);
     if (pendingSave) {
       pendingSave();
       setPendingSave(null);
     }
+  };
+
+  // 탭 전환 광고 직전 업셀 — "광고 보기" 선택
+  const handleTabAdNoticeDone = () => {
+    onNoticeComplete();
+  };
+
+  // 탭 전환 광고 직전 업셀 — "프리미엄" 선택
+  const handleTabAdNoticePremium = () => {
+    // 탭 전환 광고 취소 + 프리미엄 페이월 오픈
+    closeTabAd();
+    setShowPremiumPaywall(true);
   };
 
   const handleTabChange = (tab: Tab) => {
@@ -120,21 +186,22 @@ const Index = () => {
 
   return (
     <div className="h-dvh flex flex-col bg-background overflow-hidden">
-      {/* 저장 광고 사전 고지 */}
+      {/* 오버레이들 */}
       <AnimatePresence>
         {showSaveAdNotice && (
-          <AdNotice onDone={handleSaveAdNoticeDone} />
+          <AdUpsellNotice
+            onWatchAd={handleSaveAdNoticeDone}
+            onPremium={!isPremium ? handleSaveAdNoticePremium : undefined}
+          />
         )}
       </AnimatePresence>
 
-      {/* Save Interstitial Ad */}
       <AnimatePresence>
         {showInterstitial && (
           <InterstitialAd onClose={handleInterstitialClose} />
         )}
       </AnimatePresence>
 
-      {/* Premium Paywall */}
       <AnimatePresence>
         {showPremiumPaywall && (
           <PremiumPaywall
@@ -144,14 +211,15 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* 탭 전환 광고 사전 고지 */}
       <AnimatePresence>
         {showTabAdNotice && (
-          <AdNotice onDone={onNoticeComplete} />
+          <AdUpsellNotice
+            onWatchAd={handleTabAdNoticeDone}
+            onPremium={!isPremium ? handleTabAdNoticePremium : undefined}
+          />
         )}
       </AnimatePresence>
 
-      {/* Tab Switch Interstitial Ad */}
       <AnimatePresence>
         {showTabAd && (
           <InterstitialAd onClose={closeTabAd} />
@@ -163,12 +231,20 @@ const Index = () => {
         <AnimatePresence mode="wait">
           {activeTab === "fortune" && (
             <motion.div key="fortune" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-              <FortunePage onNavigate={(tab) => setActiveTab(tab)} />
+              <FortunePage
+                onNavigate={(tab) => setActiveTab(tab)}
+                isPremium={isPremium}
+                onShowPremium={() => setShowPremiumPaywall(true)}
+              />
             </motion.div>
           )}
           {activeTab === "lotto" && (
             <motion.div key="lotto" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-              <LottoPage onSaveWithAd={handleSaveWithAd} />
+              <LottoPage
+                onSaveWithAd={handleSaveWithAd}
+                isPremium={isPremium}
+                onShowPremium={() => setShowPremiumPaywall(true)}
+              />
             </motion.div>
           )}
           {activeTab === "attendance" && (
@@ -185,7 +261,7 @@ const Index = () => {
       </div>
 
       {/* Banner Ad */}
-      <BannerAd />
+      <BannerAd isPremium={isPremium} />
 
       {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />

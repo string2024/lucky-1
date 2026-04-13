@@ -4,8 +4,13 @@ import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 
 const AD_GROUP_ID = "ait.v2.live.cbe71145d9ae4ab3";
 
-const BannerAd = () => {
-  const { isPremium, loading } = usePremiumStatus();
+interface BannerAdProps {
+  isPremium?: boolean;
+}
+
+const BannerAd = ({ isPremium: isPremiumProp }: BannerAdProps) => {
+  const { isPremium: isPremiumStored, loading } = usePremiumStatus();
+  const isPremium = isPremiumProp ?? isPremiumStored;
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
