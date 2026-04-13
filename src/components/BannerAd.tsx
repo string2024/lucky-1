@@ -52,7 +52,10 @@ const BannerAd = () => {
   if (loading || isPremium) return null;
 
   return (
-    <div className="fixed bottom-[88px] left-0 right-0 z-30">
+    <div
+      className="fixed left-0 right-0 z-30"
+      style={{ bottom: 'calc(max(20px, env(safe-area-inset-bottom, 0px) + 8px) + 76px)' }}
+    >
       <div className="max-w-[480px] mx-auto">
         <div ref={containerRef} style={{ width: "100%", height: "96px" }} />
       </div>

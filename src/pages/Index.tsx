@@ -159,7 +159,7 @@ const Index = () => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className="flex-1 pb-[200px]">
+      <div className="flex-1 pb-[220px]">
         <AnimatePresence mode="wait">
           {activeTab === "fortune" && (
             <motion.div key="fortune" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
