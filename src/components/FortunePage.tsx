@@ -6,9 +6,11 @@ import { Button } from "@toss/tds-mobile";
 
 interface FortunePageProps {
   onNavigate?: (tab: "lotto" | "attendance") => void;
+  isPremium?: boolean;
+  onShowPremium?: () => void;
 }
 
-const FortunePage = ({ onNavigate }: FortunePageProps) => {
+const FortunePage = ({ onNavigate, isPremium, onShowPremium }: FortunePageProps) => {
   const fortunes = getTodayFortune();
   const total = getTotalScore(fortunes);
   const overall = getOverallMessage(total);
@@ -102,6 +104,21 @@ const FortunePage = ({ onNavigate }: FortunePageProps) => {
           🎱 이 운세로 행운 번호 뽑기
         </Button>
       </motion.div>
+
+      {/* Premium nudge — only for non-premium */}
+      {!isPremium && onShowPremium && (
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          onClick={onShowPremium}
+          className="w-full mt-3 mb-2 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-xs font-medium"
+        >
+          ✨ 프리미엄 패스로 광고 없이 이용하기
+        </motion.button>
+      )}
+
+      <div className="h-4" />
     </div>
   );
 };

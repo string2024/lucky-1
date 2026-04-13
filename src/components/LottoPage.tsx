@@ -6,7 +6,7 @@ import { getFreeBonusCount, useFreeBonusToken } from "@/lib/attendance";
 import { Button } from "@toss/tds-mobile";
 import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-framework";
 import BonusPackPaywall from "@/components/BonusPackPaywall";
-import { hasPremiumPass, getBonusTokenCount, useBonusToken } from "@/lib/iapStorage";
+import { getBonusTokenCount, useBonusToken } from "@/lib/iapStorage";
 import { isIapSupported } from "@/lib/iap";
 
 import { Share2, Download, Gift, Ticket } from "lucide-react";
@@ -29,9 +29,11 @@ const LottoBall = ({ num, delay }: { num: number; delay: number }) => (
 
 interface LottoPageProps {
   onSaveWithAd?: (saveFn: () => void) => void;
+  isPremium?: boolean;
+  onShowPremium?: () => void;
 }
 
-const LottoPage = ({ onSaveWithAd }: LottoPageProps) => {
+const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium }: LottoPageProps) => {
   const fortunes = getTodayFortune();
   const mainNumbers = generateLottoNumbers(fortunes);
   const [bonusNumbers, setBonusNumbers] = useState<number[] | null>(null);
@@ -39,11 +41,9 @@ const LottoPage = ({ onSaveWithAd }: LottoPageProps) => {
   const [showBonusPaywall, setShowBonusPaywall] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [freeBonusCount, setFreeBonusCount] = useState(getFreeBonusCount());
-  const [isPremium, setIsPremium] = useState(false);
   const [iapBonusTokens, setIapBonusTokens] = useState(0);
 
   useEffect(() => {
-    hasPremiumPass().then(setIsPremium);
     getBonusTokenCount().then(setIapBonusTokens);
   }, []);
 
@@ -151,7 +151,7 @@ const LottoPage = ({ onSaveWithAd }: LottoPageProps) => {
                 onClick={() => handleSave(mainNumbers, "main")}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium"
               >
-                <Download size={14} /> 광고 후 저장
+                <Download size={14} /> {isPremium ? "저장하기" : "광고 후 저장"}
               </button>
               <button
                 onClick={() => handleShare(mainNumbers)}
@@ -259,7 +259,7 @@ const LottoPage = ({ onSaveWithAd }: LottoPageProps) => {
               onClick={() => handleSave(bonusNumbers, "bonus")}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium"
             >
-              <Download size={14} /> 광고 후 저장
+              <Download size={14} /> {isPremium ? "저장하기" : "광고 후 저장"}
             </button>
             <button
               onClick={() => handleShare(bonusNumbers)}
@@ -288,6 +288,20 @@ const LottoPage = ({ onSaveWithAd }: LottoPageProps) => {
           />
         )}
       </AnimatePresence>
+
+      {/* Premium nudge — only for non-premium users */}
+      {!isPremium && onShowPremium && (
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={onShowPremium}
+          className="w-full mt-2 mb-2 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-xs font-medium"
+        >
+          ✨ 프리미엄 패스로 광고 없이 이용하기
+        </motion.button>
+      )}
+
+      <div className="h-4" />
 
       {/* Reward Ad Modal */}
       <AnimatePresence>
