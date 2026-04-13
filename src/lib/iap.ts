@@ -10,7 +10,11 @@ export const IAP_SKUS = {
 export type IapSku = typeof IAP_SKUS[keyof typeof IAP_SKUS];
 
 export const isIapSupported = (): boolean => {
-  return IAP.createOneTimePurchaseOrder.isSupported?.() ?? false;
+  try {
+    return IAP.createOneTimePurchaseOrder.isSupported?.() ?? false;
+  } catch {
+    return false;
+  }
 };
 
 export const getIapProducts = async () => {
