@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTodayFortune, generateLottoNumbers, generateBonusNumbers, getNumberColor } from "@/lib/fortune";
 import { saveNumbers, shareNumbers } from "@/lib/storage";
 import { getFreeBonusCount, useFreeBonusToken } from "@/lib/attendance";
 import { Button } from "@toss/tds-mobile";
 import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-framework";
+import BonusPackPaywall from "@/components/BonusPackPaywall";
+import { hasPremiumPass, getBonusTokenCount, useBonusToken } from "@/lib/iapStorage";
+import { isIapSupported } from "@/lib/iap";
 
 import { Share2, Download, Gift, Ticket } from "lucide-react";
 import { toast } from "sonner";
@@ -33,8 +36,16 @@ const LottoPage = ({ onSaveWithAd }: LottoPageProps) => {
   const mainNumbers = generateLottoNumbers(fortunes);
   const [bonusNumbers, setBonusNumbers] = useState<number[] | null>(null);
   const [showRewardAd, setShowRewardAd] = useState(false);
+  const [showBonusPaywall, setShowBonusPaywall] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [freeBonusCount, setFreeBonusCount] = useState(getFreeBonusCount());
+  const [isPremium, setIsPremium] = useState(false);
+  const [iapBonusTokens, setIapBonusTokens] = useState(0);
+
+  useEffect(() => {
+    hasPremiumPass().then(setIsPremium);
+    getBonusTokenCount().then(setIapBonusTokens);
+  }, []);
 
   const handleReveal = () => setRevealed(true);
 
@@ -177,31 +188,52 @@ const LottoPage = ({ onSaveWithAd }: LottoPageProps) => {
             <Gift className="mx-auto mb-2 text-primary" size={28} />
             <p className="font-semibold text-foreground mb-1">보너스 번호 받기</p>
 
-            {freeBonusCount > 0 ? (
+            {isPremium ? (
+              <>
+                <p className="text-xs text-primary mb-3">✨ 프리미엄 — 보너스 번호 무제한</p>
+                <Button size="large" style={{ width: "100%" }} onClick={() => setBonusNumbers(generateBonusNumbers(fortunes))}>
+                  🎱 보너스 번호 받기
+                </Button>
+              </>
+            ) : iapBonusTokens > 0 ? (
+              <>
+                <p className="text-xs text-muted-foreground mb-3">
+                  <Ticket size={12} className="inline mr-1" />
+                  이용권 {iapBonusTokens}개 보유 중
+                </p>
+                <Button size="large" style={{ width: "100%" }} onClick={async () => {
+                  const ok = await useBonusToken();
+                  if (ok) {
+                    setIapBonusTokens(await getBonusTokenCount());
+                    setBonusNumbers(generateBonusNumbers(fortunes));
+                    toast.success("이용권을 사용했어요!");
+                  }
+                }}>
+                  🎟 이용권으로 번호 받기
+                </Button>
+              </>
+            ) : freeBonusCount > 0 ? (
               <>
                 <p className="text-xs text-muted-foreground mb-3">
                   <Ticket size={12} className="inline mr-1" />
                   무료 이용권 {freeBonusCount}개 보유 중!
                 </p>
-                <Button
-                  size="large"
-                  style={{ width: "100%" }}
-                  onClick={handleUseFreeBonus}
-                >
+                <Button size="large" style={{ width: "100%" }} onClick={handleUseFreeBonus}>
                   🎁 무료로 번호 받기
                 </Button>
               </>
             ) : (
-              <>
-                <p className="text-xs text-muted-foreground mb-3">광고 시청 후 추가 번호 1세트를 받아보세요</p>
-                <Button
-                  size="large"
-                  style={{ width: "100%" }}
-                  onClick={handleRewardAd}
-                >
+              <div className="space-y-2 w-full">
+                <p className="text-xs text-muted-foreground mb-2">광고 시청 또는 이용권 구매</p>
+                <Button size="large" style={{ width: "100%" }} onClick={handleRewardAd}>
                   🎬 광고 보고 번호 받기
                 </Button>
-              </>
+                {isIapSupported() && (
+                  <Button size="large" variant="secondary" style={{ width: "100%" }} onClick={() => setShowBonusPaywall(true)}>
+                    🎟 이용권 구매 (990원)
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         </motion.div>
@@ -238,6 +270,24 @@ const LottoPage = ({ onSaveWithAd }: LottoPageProps) => {
           </div>
         </motion.div>
       )}
+
+      {/* Bonus Pack Paywall */}
+      <AnimatePresence>
+        {showBonusPaywall && (
+          <BonusPackPaywall
+            onSuccess={async () => {
+              setShowBonusPaywall(false);
+              setIapBonusTokens(await getBonusTokenCount());
+              toast.success("이용권 5개가 충전됐어요!");
+            }}
+            onWatchAd={() => {
+              setShowBonusPaywall(false);
+              handleRewardAd();
+            }}
+            onClose={() => setShowBonusPaywall(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Reward Ad Modal */}
       <AnimatePresence>

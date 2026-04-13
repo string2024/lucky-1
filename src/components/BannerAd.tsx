@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { TossAds } from "@apps-in-toss/web-framework";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 
 // 실 광고 ID (콘솔에서 발급받은 배너 광고 그룹 ID)
 const AD_GROUP_ID = "ait.v2.live.cbe71145d9ae4ab3";
 
 const BannerAd = () => {
+  const { isPremium, loading } = usePremiumStatus();
+  if (loading || isPremium) return null;
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 

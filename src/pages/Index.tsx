@@ -9,6 +9,8 @@ import SplashScreen from "@/components/SplashScreen";
 import BottomNav from "@/components/BottomNav";
 import BannerAd from "@/components/BannerAd";
 import InterstitialAd, { useTabSwitchAd } from "@/components/InterstitialAd";
+import PremiumPaywall from "@/components/PremiumPaywall";
+import { hasPremiumPass } from "@/lib/iapStorage";
 
 type Tab = "fortune" | "lotto" | "attendance" | "saved";
 
@@ -43,6 +45,7 @@ const Index = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [showInterstitial, setShowInterstitial] = useState(false);
   const [showSaveAdNotice, setShowSaveAdNotice] = useState(false);
+  const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
   const [pendingSave, setPendingSave] = useState<(() => void) | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("fortune");
   const { showAd: showTabAd, showAdNotice: showTabAdNotice, onTabSwitch, closeAd: closeTabAd, onNoticeComplete } = useTabSwitchAd();
@@ -71,8 +74,13 @@ const Index = () => {
     setShowSplash(false);
   };
 
-  // 저장 버튼 클릭 → 사전 고지 → 전면광고 → 저장 완료
-  const handleSaveWithAd = (saveFn: () => void) => {
+  // 저장 버튼 클릭 → 프리미엄이면 즉시 저장, 아니면 광고 플로우
+  const handleSaveWithAd = async (saveFn: () => void) => {
+    const premium = await hasPremiumPass();
+    if (premium) {
+      saveFn();
+      return;
+    }
     setPendingSave(() => saveFn);
     setShowSaveAdNotice(true);
   };
@@ -84,6 +92,15 @@ const Index = () => {
 
   const handleInterstitialClose = () => {
     setShowInterstitial(false);
+    if (pendingSave) {
+      pendingSave();
+      setPendingSave(null);
+    }
+  };
+
+  const handlePremiumSuccess = () => {
+    setShowPremiumPaywall(false);
+    // 대기 중인 저장 작업이 있으면 즉시 실행
     if (pendingSave) {
       pendingSave();
       setPendingSave(null);
@@ -114,6 +131,16 @@ const Index = () => {
       <AnimatePresence>
         {showInterstitial && (
           <InterstitialAd onClose={handleInterstitialClose} />
+        )}
+      </AnimatePresence>
+
+      {/* Premium Paywall */}
+      <AnimatePresence>
+        {showPremiumPaywall && (
+          <PremiumPaywall
+            onSuccess={handlePremiumSuccess}
+            onClose={() => setShowPremiumPaywall(false)}
+          />
         )}
       </AnimatePresence>
 

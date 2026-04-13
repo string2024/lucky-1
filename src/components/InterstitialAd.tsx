@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useState } from "react";
 import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-framework";
+import { hasPremiumPass } from "@/lib/iapStorage";
 
 // 실 광고 ID (콘솔에서 발급받은 전면 광고 그룹 ID)
 const AD_GROUP_ID = "ait.v2.live.1baffae39b8e4cb0";
@@ -51,7 +52,9 @@ export function useTabSwitchAd() {
   const [showAdNotice, setShowAdNotice] = useState(false);
   const [showAd, setShowAd] = useState(false);
 
-  const onTabSwitch = useCallback(() => {
+  const onTabSwitch = useCallback(async () => {
+    const premium = await hasPremiumPass();
+    if (premium) return;
     setTabSwitchCount((prev) => {
       const next = prev + 1;
       // 5번 탭 전환마다 광고 노출 (사전 고지 먼저)
