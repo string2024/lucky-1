@@ -119,7 +119,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col bg-background">
+    <div className="h-dvh flex flex-col bg-background overflow-hidden">
       {/* 저장 광고 사전 고지 */}
       <AnimatePresence>
         {showSaveAdNotice && (
@@ -159,7 +159,7 @@ const Index = () => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className="flex-1 pb-[220px]">
+      <div className="flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
           {activeTab === "fortune" && (
             <motion.div key="fortune" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>

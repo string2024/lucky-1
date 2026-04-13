@@ -9,7 +9,6 @@ const BannerAd = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // SDK 초기화
   useEffect(() => {
     if (loading || isPremium) return;
     if (!TossAds.initialize.isSupported?.()) return;
@@ -24,7 +23,6 @@ const BannerAd = () => {
     });
   }, [loading, isPremium]);
 
-  // 배너 부착
   useEffect(() => {
     if (loading || isPremium) return;
     if (!isInitialized || !containerRef.current) return;
@@ -44,21 +42,14 @@ const BannerAd = () => {
       },
     });
 
-    return () => {
-      result?.destroy();
-    };
+    return () => { result?.destroy(); };
   }, [isInitialized, loading, isPremium]);
 
   if (loading || isPremium) return null;
 
   return (
-    <div
-      className="fixed left-0 right-0 z-30"
-      style={{ bottom: 'calc(max(20px, env(safe-area-inset-bottom, 0px) + 8px) + 76px)' }}
-    >
-      <div className="max-w-[480px] mx-auto">
-        <div ref={containerRef} style={{ width: "100%", height: "96px" }} />
-      </div>
+    <div className="w-full shrink-0 bg-background" style={{ height: "96px" }}>
+      <div ref={containerRef} className="w-full h-full" />
     </div>
   );
 };

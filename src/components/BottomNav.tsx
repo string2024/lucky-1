@@ -17,10 +17,10 @@ const tabs: { id: Tab; label: string; icon: typeof Star }[] = [
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   return (
     <nav
-      className="fixed left-4 right-4 z-40"
-      style={{ bottom: 'max(20px, calc(env(safe-area-inset-bottom, 0px) + 8px))' }}
+      className="w-full shrink-0 bg-white border-t border-gray-100"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className="bg-white/95 backdrop-blur-sm rounded-full shadow-xl border border-white/60 flex overflow-hidden">
+      <div className="flex">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
