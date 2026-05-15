@@ -26,3 +26,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# AIT build artifact
+*.ait
+
+# Tool directories
+.bkit/
+.claude/
+.granite/

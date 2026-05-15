@@ -57,8 +57,8 @@ export function useTabSwitchAd() {
     if (premium) return;
     setTabSwitchCount((prev) => {
       const next = prev + 1;
-      // 5번 탭 전환마다 광고 노출 (사전 고지 먼저)
-      if (next % 5 === 0) {
+      // 3번 탭 전환마다 광고 노출 (사전 고지 먼저)
+      if (next % 3 === 0) {
         setShowAdNotice(true);
       }
       return next;

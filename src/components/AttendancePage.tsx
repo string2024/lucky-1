@@ -14,7 +14,11 @@ const REWARDS = [
   "🎁 무료 보너스!",
 ];
 
-const AttendancePage = () => {
+interface AttendancePageProps {
+  onCheckInSuccess?: () => void;
+}
+
+const AttendancePage = ({ onCheckInSuccess }: AttendancePageProps) => {
   const [info, setInfo] = useState(getAttendanceInfo());
   const [justChecked, setJustChecked] = useState(false);
   const [freeBonusCount, setFreeBonusCount] = useState(getFreeBonusCount());
@@ -48,6 +52,9 @@ const AttendancePage = () => {
         });
       }, 1000);
     }
+
+    // 출석 성공 후 광고 (토스트 확인 시간 확보)
+    setTimeout(() => onCheckInSuccess?.(), 800);
   };
 
   const streakDays = Array.from({ length: 7 }, (_, i) => i + 1);

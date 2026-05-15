@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { TDSMobileAITProvider } from "@toss/tds-mobile-ait";
 import { usePendingOrderRecovery } from "@/hooks/usePendingOrderRecovery";
+import { useAppVisit } from "@/hooks/useAppVisit";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -12,6 +13,7 @@ const queryClient = new QueryClient();
 
 const AppInner = () => {
   usePendingOrderRecovery();
+  useAppVisit();
   return (
     <BrowserRouter>
       <Routes>

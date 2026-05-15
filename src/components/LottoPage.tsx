@@ -74,15 +74,16 @@ const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium }: LottoPage
     setShowRewardAd(true);
     loadFullScreenAd({
       options: { adGroupId: REWARD_AD_ID },
-      onEvent: () => {
+      onEvent: (event) => {
+        if (event.type !== "loaded") return;
         showFullScreenAd({
           options: { adGroupId: REWARD_AD_ID },
-          onEvent: (event) => {
-            if (event.type === "userEarnedReward") {
+          onEvent: (showEvent) => {
+            if (showEvent.type === "userEarnedReward") {
               setBonusNumbers(generateBonusNumbers(fortunes));
               toast.success("보너스 번호가 생성되었어요!");
             }
-            if (event.type === "dismissed" || event.type === "failedToShow") {
+            if (showEvent.type === "dismissed" || showEvent.type === "failedToShow") {
               setShowRewardAd(false);
             }
           },

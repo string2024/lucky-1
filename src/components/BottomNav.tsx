@@ -17,8 +17,8 @@ const tabs: { id: Tab; label: string; icon: typeof Star }[] = [
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   return (
     <nav
-      className="w-full shrink-0 bg-white border-t border-gray-100"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="mx-4 rounded-2xl bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100"
+      style={{ marginBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
     >
       <div className="flex">
         {tabs.map((tab) => {

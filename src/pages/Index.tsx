@@ -91,6 +91,7 @@ const Index = () => {
   const [showSaveAdNotice, setShowSaveAdNotice] = useState(false);
   const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
   const [pendingSave, setPendingSave] = useState<(() => void) | null>(null);
+  const [pendingTab, setPendingTab] = useState<Tab | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("fortune");
   const [isPremium, setIsPremium] = useState(false);
   const { showAd: showTabAd, showAdNotice: showTabAdNotice, onTabSwitch, closeAd: closeTabAd, onNoticeComplete } = useTabSwitchAd();
@@ -150,6 +151,29 @@ const Index = () => {
       pendingSave();
       setPendingSave(null);
     }
+    if (pendingTab) {
+      setActiveTab(pendingTab);
+      setPendingTab(null);
+    }
+  };
+
+  // 출석 체크 성공 시 인터스티셜 (프리미엄 제외)
+  const handleCheckInSuccess = async () => {
+    const premium = await hasPremiumPass();
+    if (!premium) setShowInterstitial(true);
+  };
+
+  // 운세→번호 이동: 비프리미엄은 광고 후 이동, 프리미엄은 즉시 이동
+  const handleFortuneNavigate = async (tab: "lotto" | "attendance") => {
+    if (tab === "lotto") {
+      const premium = await hasPremiumPass();
+      if (!premium) {
+        setPendingTab("lotto");
+        setShowInterstitial(true);
+        return;
+      }
+    }
+    setActiveTab(tab);
   };
 
   const handlePremiumSuccess = () => {
@@ -232,7 +256,7 @@ const Index = () => {
           {activeTab === "fortune" && (
             <motion.div key="fortune" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
               <FortunePage
-                onNavigate={(tab) => setActiveTab(tab)}
+                onNavigate={handleFortuneNavigate}
                 isPremium={isPremium}
                 onShowPremium={() => setShowPremiumPaywall(true)}
               />
@@ -249,7 +273,7 @@ const Index = () => {
           )}
           {activeTab === "attendance" && (
             <motion.div key="attendance" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-              <AttendancePage />
+              <AttendancePage onCheckInSuccess={handleCheckInSuccess} />
             </motion.div>
           )}
           {activeTab === "saved" && (
