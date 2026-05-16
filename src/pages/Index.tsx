@@ -268,6 +268,7 @@ const Index = () => {
                 onSaveWithAd={handleSaveWithAd}
                 isPremium={isPremium}
                 onShowPremium={() => setShowPremiumPaywall(true)}
+                onShowBonusPremium={!isPremium ? () => setShowPremiumPaywall(true) : undefined}
               />
             </motion.div>
           )}

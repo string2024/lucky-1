@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTodayFortune, generateLottoNumbers, generateBonusNumbers, getNumberColor } from "@/lib/fortune";
 import { saveNumbers, shareNumbers } from "@/lib/storage";
@@ -31,9 +31,10 @@ interface LottoPageProps {
   onSaveWithAd?: (saveFn: () => void) => void;
   isPremium?: boolean;
   onShowPremium?: () => void;
+  onShowBonusPremium?: () => void;
 }
 
-const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium }: LottoPageProps) => {
+const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium, onShowBonusPremium }: LottoPageProps) => {
   const fortunes = getTodayFortune();
   const mainNumbers = generateLottoNumbers(fortunes);
   const [bonusNumbers, setBonusNumbers] = useState<number[] | null>(null);
@@ -43,6 +44,8 @@ const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium }: LottoPage
   const [freeBonusCount, setFreeBonusCount] = useState(getFreeBonusCount());
   const [iapBonusTokens, setIapBonusTokens] = useState(0);
   const [bonusPackPrice, setBonusPackPrice] = useState("990원");
+  const [rewardAdLoaded, setRewardAdLoaded] = useState(false);
+  const rewardUnregisterRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     getBonusTokenCount().then(setIapBonusTokens);
@@ -50,6 +53,19 @@ const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium }: LottoPage
       const p = products.find((p) => p.sku === IAP_SKUS.BONUS_5PACK);
       if (p?.displayAmount) setBonusPackPrice(p.displayAmount);
     }).catch(() => {});
+
+    // 리워드 광고 사전 로드 — 버튼 클릭 시 즉시 노출 가능하도록
+    if (loadFullScreenAd.isSupported?.()) {
+      rewardUnregisterRef.current = loadFullScreenAd({
+        options: { adGroupId: REWARD_AD_ID },
+        onEvent: (event) => {
+          if (event.type === "loaded") setRewardAdLoaded(true);
+        },
+        onError: () => {},
+      });
+    }
+
+    return () => { rewardUnregisterRef.current?.(); };
   }, []);
 
   const handleReveal = () => setRevealed(true);
@@ -65,36 +81,56 @@ const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium }: LottoPage
 
   const handleRewardAd = () => {
     if (!loadFullScreenAd.isSupported?.()) {
-      // 토스 앱 환경이 아닐 때 fallback
       setBonusNumbers(generateBonusNumbers(fortunes));
       toast.success("보너스 번호가 생성되었어요!");
       return;
     }
 
-    setShowRewardAd(true);
-    loadFullScreenAd({
-      options: { adGroupId: REWARD_AD_ID },
-      onEvent: (event) => {
-        if (event.type !== "loaded") return;
-        showFullScreenAd({
-          options: { adGroupId: REWARD_AD_ID },
-          onEvent: (showEvent) => {
-            if (showEvent.type === "userEarnedReward") {
-              setBonusNumbers(generateBonusNumbers(fortunes));
-              toast.success("보너스 번호가 생성되었어요!");
-            }
-            if (showEvent.type === "dismissed" || showEvent.type === "failedToShow") {
-              setShowRewardAd(false);
-            }
-          },
-          onError: () => setShowRewardAd(false),
-        });
-      },
-      onError: () => {
-        setShowRewardAd(false);
-        toast.error("광고를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
-      },
-    });
+    const doShow = () => {
+      setShowRewardAd(true);
+      showFullScreenAd({
+        options: { adGroupId: REWARD_AD_ID },
+        onEvent: (showEvent) => {
+          if (showEvent.type === "userEarnedReward") {
+            setBonusNumbers(generateBonusNumbers(fortunes));
+            toast.success("보너스 번호가 생성되었어요!");
+          }
+          if (showEvent.type === "dismissed" || showEvent.type === "failedToShow") {
+            setShowRewardAd(false);
+            // 다음 사용을 위해 재로드
+            setRewardAdLoaded(false);
+            rewardUnregisterRef.current = loadFullScreenAd({
+              options: { adGroupId: REWARD_AD_ID },
+              onEvent: (e) => { if (e.type === "loaded") setRewardAdLoaded(true); },
+              onError: () => {},
+            });
+          }
+        },
+        onError: () => setShowRewardAd(false),
+      });
+    };
+
+    if (rewardAdLoaded) {
+      // 사전 로드 완료 → 즉시 노출
+      doShow();
+    } else {
+      // 아직 로드 중 → 로드 후 노출
+      setShowRewardAd(true);
+      rewardUnregisterRef.current?.();
+      rewardUnregisterRef.current = loadFullScreenAd({
+        options: { adGroupId: REWARD_AD_ID },
+        onEvent: (event) => {
+          if (event.type === "loaded") {
+            setRewardAdLoaded(true);
+            doShow();
+          }
+        },
+        onError: () => {
+          setShowRewardAd(false);
+          toast.error("광고를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+        },
+      });
+    }
   };
 
   const handleSave = (numbers: number[], type: "main" | "bonus") => {
@@ -291,6 +327,7 @@ const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium }: LottoPage
               handleRewardAd();
             }}
             onClose={() => setShowBonusPaywall(false)}
+            onShowPremium={onShowBonusPremium}
           />
         )}
       </AnimatePresence>

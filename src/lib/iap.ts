@@ -1,5 +1,4 @@
 import { IAP } from '@apps-in-toss/web-framework';
-import { supabase } from '@/integrations/supabase/client';
 import { saveGrantedSku, saveBonusTokens } from './iapStorage';
 
 export const IAP_SKUS = {
@@ -40,17 +39,6 @@ const grantProduct = async (sku: IapSku, orderId: string): Promise<boolean> => {
     } else if (sku === IAP_SKUS.BONUS_5PACK) {
       await saveBonusTokens(5);
     }
-
-    // Supabase 기록은 실패해도 지급 유지 (fire and forget)
-    supabase.from('purchases').insert({
-      order_id: orderId,
-      sku,
-      product_type: sku === IAP_SKUS.PREMIUM_PASS ? 'non_consumable' : 'consumable',
-      amount: sku === IAP_SKUS.PREMIUM_PASS ? 3300 : 990,
-      status: 'DONE',
-    }).then(({ error }) => {
-      if (error) console.warn('[IAP] Supabase insert failed:', error);
-    });
 
     return true;
   } catch {

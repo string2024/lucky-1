@@ -7,9 +7,10 @@ interface BonusPackPaywallProps {
   onSuccess: () => void;
   onWatchAd: () => void;
   onClose: () => void;
+  onShowPremium?: () => void;
 }
 
-const BonusPackPaywall = ({ onSuccess, onWatchAd, onClose }: BonusPackPaywallProps) => {
+const BonusPackPaywall = ({ onSuccess, onWatchAd, onClose, onShowPremium }: BonusPackPaywallProps) => {
   const [loading, setLoading] = useState(false);
   const [displayAmount, setDisplayAmount] = useState("990원");
   const cleanupRef = useRef<(() => void) | null>(null);
@@ -89,7 +90,16 @@ const BonusPackPaywall = ({ onSuccess, onWatchAd, onClose }: BonusPackPaywallPro
           </Button>
         </div>
 
-        <button onClick={onClose} className="w-full mt-3 text-sm text-muted-foreground py-2">
+        {onShowPremium && isIapSupported() && (
+          <button
+            onClick={() => { onClose(); onShowPremium(); }}
+            className="w-full mt-3 py-2.5 rounded-2xl border border-amber-200 bg-amber-50 text-amber-700 text-xs font-semibold"
+          >
+            ✨ 프리미엄 패스로 광고 없이 무제한 이용하기 (3,300원)
+          </button>
+        )}
+
+        <button onClick={onClose} className="w-full mt-2 text-sm text-muted-foreground py-2">
           닫기
         </button>
       </motion.div>
