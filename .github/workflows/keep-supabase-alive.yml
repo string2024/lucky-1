@@ -1,0 +1,60 @@
+name: Keep Supabase Alive
+
+# ─────────────────────────────────────────────────────────────
+# Supabase 무료 플랜은 7일간 활동이 없으면 프로젝트가 자동 중지됩니다.
+# 이 워크플로가 3일마다 접속해서 "사용 중" 상태를 유지합니다.
+#
+# 대상
+#   - lucky-1     (가져봐1등 앱)
+#   - follicle-iq (FollicleIQ 서비스, 출시·홍보 중)
+#
+# 여기 적힌 키는 Supabase의 anon(publishable) 키로,
+# 원래 앱 파일에도 그대로 포함되어 배포되는 공개용 값입니다.
+# 데이터 보호는 RLS 정책이 담당하므로 노출돼도 문제되지 않습니다.
+# (service_role / secret 키는 절대 여기 넣지 마세요)
+#
+# 테이블 이름 대신 /rest/v1/ 루트를 호출하므로,
+# 나중에 테이블 구조가 바뀌어도 이 파일은 손댈 필요가 없습니다.
+# ─────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    - cron: '0 1 */3 * *'   # 3일마다 오전 10시 (KST)
+  workflow_dispatch:         # Actions 탭에서 수동 실행 가능
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false        # 하나 실패해도 나머지는 계속 검사
+      matrix:
+        include:
+          - name: lucky-1
+            url: https://tfttnboapstboxsvwvqw.supabase.co
+            key: sb_publishable_wkOmM7xMrenuh3Aru_Aang_BoSTSCL2
+          - name: follicle-iq
+            url: https://estfcrkcydxbfytiugxx.supabase.co
+            key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzdGZjcmtjeWR4YmZ5dGl1Z3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5MTkzNzAsImV4cCI6MjEwMTQ5NTM3MH0.HCpie5NR7ept6c1GzgPmmhawypStmbaGYmeAUeaw7AE
+
+    name: ping ${{ matrix.name }}
+    steps:
+      - name: Ping ${{ matrix.name }}
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 \
+            "${{ matrix.url }}/rest/v1/" \
+            -H "apikey: ${{ matrix.key }}")
+
+          echo "${{ matrix.name }} → HTTP $STATUS"
+
+          case "$STATUS" in
+            200|401|404|406)
+              echo "✅ ${{ matrix.name }} 살아있음"
+              ;;
+            *)
+              echo "❌ ${{ matrix.name }} 응답 이상 (HTTP $STATUS)"
+              echo "   프로젝트가 일시중지됐거나 키가 만료됐을 수 있습니다."
+              echo "   https://supabase.com/dashboard 에서 확인하세요."
+              exit 1
+              ;;
+          esac
