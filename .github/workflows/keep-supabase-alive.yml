@@ -6,7 +6,6 @@ name: Keep Supabase Alive
 #
 # 대상
 #   - lucky-1     (가져봐1등 앱)
-#   - follicle-iq (FollicleIQ 서비스, 출시·홍보 중)
 #
 # 여기 적힌 키는 Supabase의 anon(publishable) 키로,
 # 원래 앱 파일에도 그대로 포함되어 배포되는 공개용 값입니다.
@@ -32,10 +31,7 @@ jobs:
           - name: lucky-1
             url: https://tfttnboapstboxsvwvqw.supabase.co
             key: sb_publishable_wkOmM7xMrenuh3Aru_Aang_BoSTSCL2
-          - name: follicle-iq
-            url: https://estfcrkcydxbfytiugxx.supabase.co
-            key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzdGZjcmtjeWR4YmZ5dGl1Z3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5MTkzNzAsImV4cCI6MjEwMTQ5NTM3MH0.HCpie5NR7ept6c1GzgPmmhawypStmbaGYmeAUeaw7AE
-
+          
     name: ping ${{ matrix.name }}
     steps:
       - name: Ping ${{ matrix.name }}
