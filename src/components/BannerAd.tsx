@@ -1,11 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { TossAds } from "@apps-in-toss/web-framework";
 
-const LIVE_AD_GROUP_ID = "ait.v2.live.cbe71145d9ae4ab3";
-// 콘솔 QR 테스트 주소(*.private-*)에서는 공식 테스트 배너 ID를 쓴다. 출시 주소에서는 실제 ID를 쓴다.
-const TEST_AD_GROUP_ID = "ait-ad-test-banner-id";
-const isQrTestEnv = () => typeof window !== "undefined" && /\.private-/.test(window.location.hostname);
-const AD_GROUP_ID = isQrTestEnv() ? TEST_AD_GROUP_ID : LIVE_AD_GROUP_ID;
+// 출시 번들에는 테스트 광고 ID를 넣을 수 없다(검수 반려 사유). 실제 ID만 둔다.
+const AD_GROUP_ID = "ait.v2.live.cbe71145d9ae4ab3";
 
 interface BannerAdProps {
   isPremium?: boolean;
