@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { getSavedNumbers, deleteNumbers, shareNumbers, type SavedNumbers as SavedEntry } from "@/lib/storage";
+import { getSavedNumbers, deleteNumbers, type SavedNumbers as SavedEntry } from "@/lib/storage";
 import { getNumberColor } from "@/lib/fortune";
 import { Trash2, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { shareMessage, luckyNumbersMessage } from "@/lib/share";
 
 const SavedPage = () => {
   const [saved, setSaved] = useState<SavedEntry[]>([]);
@@ -19,18 +20,9 @@ const SavedPage = () => {
   };
 
   const handleShare = async (numbers: number[]) => {
-    const text = shareNumbers(numbers);
-    try {
-      if (navigator.share) {
-        await navigator.share({ text });
-      } else {
-        await navigator.clipboard.writeText(text);
-        toast.success("클립보드에 복사되었어요!");
-      }
-    } catch {
-      await navigator.clipboard.writeText(text);
-      toast.success("클립보드에 복사되었어요!");
-    }
+    const result = await shareMessage(luckyNumbersMessage(numbers));
+    if (result === "copied") toast.success("클립보드에 복사되었어요!");
+    if (result === "failed") toast.error("공유하지 못했어요. 잠시 후 다시 시도해주세요.");
   };
 
   return (

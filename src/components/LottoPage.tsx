@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTodayFortune, generateLottoNumbers, generateBonusNumbers, getNumberColor } from "@/lib/fortune";
-import { saveNumbers, shareNumbers } from "@/lib/storage";
+import { saveNumbers } from "@/lib/storage";
 import { getFreeBonusCount, useFreeBonusToken } from "@/lib/attendance";
 import { Button } from "@toss/tds-mobile";
 import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-framework";
@@ -11,6 +11,7 @@ import { isIapSupported, getIapProducts, IAP_SKUS } from "@/lib/iap";
 
 import { Share2, Download, Gift, Ticket } from "lucide-react";
 import { toast } from "sonner";
+import { shareMessage, luckyNumbersMessage } from "@/lib/share";
 
 // 실 광고 ID (콘솔에서 발급받은 보상형 광고 그룹 ID)
 const REWARD_AD_ID = "ait.v2.live.6f0047c507dd40aa";
@@ -147,18 +148,9 @@ const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium, onShowBonus
   };
 
   const handleShare = async (numbers: number[]) => {
-    const text = shareNumbers(numbers);
-    try {
-      if (navigator.share) {
-        await navigator.share({ text });
-      } else {
-        await navigator.clipboard.writeText(text);
-        toast.success("클립보드에 복사되었어요!");
-      }
-    } catch {
-      await navigator.clipboard.writeText(text);
-      toast.success("클립보드에 복사되었어요!");
-    }
+    const result = await shareMessage(luckyNumbersMessage(numbers));
+    if (result === "copied") toast.success("클립보드에 복사되었어요!");
+    if (result === "failed") toast.error("공유하지 못했어요. 잠시 후 다시 시도해주세요.");
   };
 
   return (

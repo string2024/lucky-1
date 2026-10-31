@@ -129,3 +129,25 @@ export function getOverallMessage(total: number): string {
   if (total >= 8) return "😐 조심스러운 하루, 신중하게!";
   return "🍀 오늘은 쉬어가는 날로 삼으세요.";
 }
+
+export interface LuckyTip {
+  color: string;
+  direction: string;
+  time: string;
+  number: number;
+}
+
+const TIP_COLORS = ["빨강", "주황", "노랑", "초록", "파랑", "보라", "하양", "검정"];
+const TIP_DIRECTIONS = ["동쪽", "서쪽", "남쪽", "북쪽", "남동쪽", "남서쪽", "북동쪽", "북서쪽"];
+const TIP_TIMES = ["오전 9시경", "오전 11시경", "오후 1시경", "오후 3시경", "오후 6시경", "저녁 8시경"];
+
+/** 오늘 날짜로 정해지는 행운 색·방향·시간·숫자 (같은 날에는 항상 같다) */
+export function getLuckyTip(): LuckyTip {
+  const rand = seededRandom(getDateSeed() + 31337);
+  return {
+    color: TIP_COLORS[Math.floor(rand() * TIP_COLORS.length)],
+    direction: TIP_DIRECTIONS[Math.floor(rand() * TIP_DIRECTIONS.length)],
+    time: TIP_TIMES[Math.floor(rand() * TIP_TIMES.length)],
+    number: Math.floor(rand() * 45) + 1,
+  };
+}

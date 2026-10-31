@@ -59,9 +59,13 @@ export function checkIn(): { streak: number; alreadyChecked: boolean; rewardGran
   data.streak = newStreak;
   data.lastDate = today;
 
-  // 7일 달성 시 무료 보너스 토큰 지급
+  // 7일마다 무료 보너스 토큰 지급, 30일째에는 한 개 더
   let rewardGranted = false;
   if (newStreak > 0 && newStreak % 7 === 0) {
+    grantFreeBonus();
+    rewardGranted = true;
+  }
+  if (newStreak === 30) {
     grantFreeBonus();
     rewardGranted = true;
   }
@@ -78,6 +82,13 @@ export function checkIn(): { streak: number; alreadyChecked: boolean; rewardGran
   saveData(data);
 
   return { streak: newStreak, alreadyChecked: false, rewardGranted, newBadges };
+}
+
+/** 다음 무료 보너스(7일마다, 30일째 포함)까지 남은 일수 */
+export function daysToNextReward(streak: number): number {
+  const toWeekly = 7 - (streak % 7);
+  const toThirty = streak < 30 ? 30 - streak : Infinity;
+  return Math.min(toWeekly, toThirty);
 }
 
 export function getAttendanceInfo() {

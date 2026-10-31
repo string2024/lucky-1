@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
-import { getTodayFortune, getTotalScore, getOverallMessage } from "@/lib/fortune";
-import { getAttendanceInfo } from "@/lib/attendance";
-import { Ticket, Calendar, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { getTodayFortune, getTotalScore, getOverallMessage, getLuckyTip } from "@/lib/fortune";
+import { getAttendanceInfo, daysToNextReward } from "@/lib/attendance";
+import { useRewardAd } from "@/hooks/useRewardAd";
+import { shareMessage, fortuneMessage } from "@/lib/share";
+import { toast } from "sonner";
+import { Ticket, Calendar, ArrowRight, Lock, Share2 } from "lucide-react";
 import { Button } from "@toss/tds-mobile";
 
 interface FortunePageProps {
@@ -10,7 +14,41 @@ interface FortunePageProps {
   onShowPremium?: () => void;
 }
 
+const TIP_KEY = "gajyeobwa_tip_unlocked";
+
+// 한국 시간(기기 시간) 기준 오늘 날짜
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
+const isTipUnlockedToday = (): boolean => {
+  try {
+    return localStorage.getItem(TIP_KEY) === todayStr();
+  } catch {
+    return false;
+  }
+};
+
 const FortunePage = ({ onNavigate, isPremium, onShowPremium }: FortunePageProps) => {
+  const [tipUnlocked, setTipUnlocked] = useState(isTipUnlockedToday());
+  const tip = getLuckyTip();
+  const { show: showTipAd, ready: tipAdReady, failed: tipAdFailed, showing: tipAdShowing } = useRewardAd(() => {
+    try {
+      localStorage.setItem(TIP_KEY, todayStr());
+    } catch {
+      // 저장에 실패해도 오늘은 열어 준다
+    }
+    setTipUnlocked(true);
+  });
+  const tipOpen = tipUnlocked || !!isPremium;
+
+  const handleShare = async () => {
+    const result = await shareMessage(fortuneMessage(total));
+    if (result === "copied") toast.success("클립보드에 복사되었어요!");
+    if (result === "failed") toast.error("공유하지 못했어요. 잠시 후 다시 시도해주세요.");
+  };
+
   const fortunes = getTodayFortune();
   const total = getTotalScore(fortunes);
   const overall = getOverallMessage(total);
@@ -37,7 +75,9 @@ const FortunePage = ({ onNavigate, isPremium, onShowPremium }: FortunePageProps)
           <div className="flex-1 text-left">
             <p className="text-sm font-semibold text-foreground">오늘 출석 안 했어요!</p>
             <p className="text-[11px] text-muted-foreground">
-              {attendance.streak > 0 ? `${attendance.streak}일 연속 중 — 끊지 마세요!` : "출석하고 보상 받기"}
+              {attendance.streak > 0
+                ? `${attendance.streak}일 연속 중 — ${daysToNextReward(attendance.streak)}일 더 하면 무료 보너스!`
+                : "출석하고 보상 받기"}
             </p>
           </div>
           <ArrowRight size={14} className="text-muted-foreground" />
@@ -89,6 +129,30 @@ const FortunePage = ({ onNavigate, isPremium, onShowPremium }: FortunePageProps)
         ))}
       </div>
 
+      {/* 오늘의 행운 팁 — 광고를 보면 열린다 */}
+      <div className="bg-card rounded-xl p-4 mt-3">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-semibold text-sm text-foreground">🔮 오늘의 행운 팁</span>
+          {!tipOpen && <Lock size={14} className="text-muted-foreground" />}
+        </div>
+        {tipOpen ? (
+          <div className="grid grid-cols-2 gap-2 text-xs text-foreground">
+            <p>🎨 행운의 색 <b>{tip.color}</b></p>
+            <p>🧭 행운의 방향 <b>{tip.direction}</b></p>
+            <p>⏰ 좋은 시간 <b>{tip.time}</b></p>
+            <p>🔢 행운의 숫자 <b>{tip.number}</b></p>
+          </div>
+        ) : (
+          <button
+            onClick={showTipAd}
+            disabled={tipAdShowing || (!tipAdReady && !tipAdFailed)}
+            className="w-full py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-semibold disabled:opacity-60"
+          >
+            {tipAdFailed ? "광고를 불러오지 못했어요. 다시 시도" : tipAdReady ? "광고 보고 오늘의 행운 팁 열기" : "광고 불러오는 중..."}
+          </button>
+        )}
+      </div>
+
       {/* CTA: Go to Lotto */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -104,6 +168,13 @@ const FortunePage = ({ onNavigate, isPremium, onShowPremium }: FortunePageProps)
           🎱 이 운세로 행운 번호 뽑기
         </Button>
       </motion.div>
+
+      <button
+        onClick={handleShare}
+        className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground"
+      >
+        <Share2 size={14} /> 친구에게 오늘 운세 공유하기
+      </button>
 
       {/* Premium nudge — only for non-premium */}
       {!isPremium && onShowPremium && (

@@ -30,7 +30,7 @@ export const completeGrant = async (orderId: string) => {
   await IAP.completeProductGrant({ params: { orderId } });
 };
 
-// 상품 지급 핵심 로직 — 로컬 저장 우선, Supabase는 best-effort
+// 상품 지급 핵심 로직 — 폰 안 저장소에 지급
 const grantProduct = async (sku: IapSku, orderId: string): Promise<boolean> => {
   try {
     // 로컬 저장 먼저 (실패하면 false 반환 → SDK가 재시도)
