@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { getSavedNumbers, deleteNumbers, type SavedNumbers as SavedEntry } from "@/lib/storage";
-import { getNumberColor } from "@/lib/fortune";
+import { getNumberColor, getNumberTextColor } from "@/lib/fortune";
 import { Trash2, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { shareMessage, luckyNumbersMessage } from "@/lib/share";
@@ -54,7 +54,7 @@ const SavedPage = () => {
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">{entry.date}</span>
                   {entry.type === "bonus" && (
-                    <span className="text-[10px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-full">보너스</span>
+                    <span className="text-xs bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-full">보너스</span>
                   )}
                 </div>
                 <div className="flex gap-1">
@@ -71,7 +71,7 @@ const SavedPage = () => {
                   <div
                     key={num}
                     className="lotto-ball text-primary-foreground text-xs"
-                    style={{ backgroundColor: getNumberColor(num), width: 36, height: 36 }}
+                    style={{ backgroundColor: getNumberColor(num), color: getNumberTextColor(num), width: 36, height: 36 }}
                   >
                     {num}
                   </div>

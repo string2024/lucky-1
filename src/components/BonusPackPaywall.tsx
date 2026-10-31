@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useCloseOnBack, sheetDragProps } from "@/lib/overlayBack";
 import { Button } from "@toss/tds-mobile";
 import { requestPurchase, IAP_SKUS, isIapSupported, getIapProducts } from "@/lib/iap";
 
@@ -11,6 +12,7 @@ interface BonusPackPaywallProps {
 }
 
 const BonusPackPaywall = ({ onSuccess, onWatchAd, onClose, onShowPremium }: BonusPackPaywallProps) => {
+  useCloseOnBack(onClose);
   const [loading, setLoading] = useState(false);
   const [displayAmount, setDisplayAmount] = useState("990원");
   const cleanupRef = useRef<(() => void) | null>(null);
@@ -53,6 +55,7 @@ const BonusPackPaywall = ({ onSuccess, onWatchAd, onClose, onShowPremium }: Bonu
         initial={{ y: 100 }}
         animate={{ y: 0 }}
         exit={{ y: 100 }}
+        {...sheetDragProps(onClose)}
         className="bg-white rounded-t-3xl w-full px-6 pt-6 pb-10"
         onClick={(e) => e.stopPropagation()}
       >
@@ -72,7 +75,7 @@ const BonusPackPaywall = ({ onSuccess, onWatchAd, onClose, onShowPremium }: Bonu
 
         <div className="space-y-3">
           <Button
-            size="lg"
+            size="large"
             onClick={handlePurchase}
             disabled={loading || !isIapSupported()}
             style={{ width: "100%" }}
@@ -81,8 +84,8 @@ const BonusPackPaywall = ({ onSuccess, onWatchAd, onClose, onShowPremium }: Bonu
           </Button>
 
           <Button
-            size="lg"
-            variant="secondary"
+            size="large"
+            variant="weak"
             onClick={onWatchAd}
             style={{ width: "100%" }}
           >

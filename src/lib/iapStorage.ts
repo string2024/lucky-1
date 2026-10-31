@@ -26,7 +26,8 @@ export const saveGrantedSku = async (sku: string): Promise<void> => {
 
 export const hasPremiumPass = async (): Promise<boolean> => {
   const val = await getItem(PREMIUM_KEY);
-  return val === 'lucky1.premium.pass';
+  // 프리미엄 패스를 지급받았을 때만 이 값이 저장된다(예전 상품 코드로 저장된 값도 인정)
+  return !!val;
 };
 
 export const saveBonusTokens = async (add: number): Promise<void> => {

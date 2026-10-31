@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { TossAds } from "@apps-in-toss/web-framework";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 
-const AD_GROUP_ID = "ait.v2.live.cbe71145d9ae4ab3";
+const LIVE_AD_GROUP_ID = "ait.v2.live.cbe71145d9ae4ab3";
+// 콘솔 QR 테스트 주소(*.private-*)에서는 공식 테스트 배너 ID를 쓴다. 출시 주소에서는 실제 ID를 쓴다.
+const TEST_AD_GROUP_ID = "ait-ad-test-banner-id";
+const isQrTestEnv = () => typeof window !== "undefined" && /\.private-/.test(window.location.hostname);
+const AD_GROUP_ID = isQrTestEnv() ? TEST_AD_GROUP_ID : LIVE_AD_GROUP_ID;
 
 interface BannerAdProps {
   isPremium?: boolean;
@@ -13,6 +17,8 @@ const BannerAd = ({ isPremium: isPremiumProp }: BannerAdProps) => {
   const isPremium = isPremiumProp ?? isPremiumStored;
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  // 보여 줄 광고가 없거나 그리지 못하면 빈 회색 띠가 남지 않게 자리를 접는다
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     if (loading || isPremium) return;
@@ -40,9 +46,11 @@ const BannerAd = ({ isPremium: isPremiumProp }: BannerAdProps) => {
       callbacks: {
         onAdFailedToRender: (payload) => {
           console.error("배너 광고 렌더링 실패:", payload.error.message);
+          setCollapsed(true);
         },
         onNoFill: () => {
           console.warn("표시할 배너 광고가 없습니다.");
+          setCollapsed(true);
         },
       },
     });
@@ -50,10 +58,10 @@ const BannerAd = ({ isPremium: isPremiumProp }: BannerAdProps) => {
     return () => { result?.destroy(); };
   }, [isInitialized, loading, isPremium]);
 
-  if (loading || isPremium) return null;
+  if (loading || isPremium || collapsed) return null;
 
   return (
-    <div className="w-full shrink-0 bg-background" style={{ height: "96px" }}>
+    <div className="w-full shrink-0 bg-background" style={{ height: "102px" }}>
       <div ref={containerRef} className="w-full h-full" />
     </div>
   );

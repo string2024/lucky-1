@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getTodayFortune, generateLottoNumbers, generateBonusNumbers, getNumberColor } from "@/lib/fortune";
+import { getTodayFortune, generateLottoNumbers, generateBonusNumbers, getNumberColor, getNumberTextColor } from "@/lib/fortune";
 import { saveNumbers } from "@/lib/storage";
 import { getFreeBonusCount, useFreeBonusToken } from "@/lib/attendance";
 import { Button } from "@toss/tds-mobile";
@@ -22,7 +22,7 @@ const LottoBall = ({ num, delay }: { num: number; delay: number }) => (
     animate={{ scale: 1, rotate: 0 }}
     transition={{ delay, type: "spring", stiffness: 300, damping: 15 }}
     className="lotto-ball text-primary-foreground font-bold"
-    style={{ backgroundColor: getNumberColor(num) }}
+    style={{ backgroundColor: getNumberColor(num), color: getNumberTextColor(num) }}
   >
     {num}
   </motion.div>
@@ -202,7 +202,7 @@ const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium, onShowBonus
       {revealed && (
         <div className="bg-card rounded-2xl p-4 mb-4 border border-border">
           <div className="flex items-center gap-1 mb-2">
-            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">AD</span>
+            <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">AD</span>
           </div>
           <div className="gradient-gold-soft rounded-xl p-4 text-center">
             <p className="text-sm font-medium text-secondary-foreground">🍀 행운을 나누면 두 배!</p>
@@ -263,7 +263,7 @@ const LottoPage = ({ onSaveWithAd, isPremium = false, onShowPremium, onShowBonus
                   🎬 광고 보고 번호 받기
                 </Button>
                 {isIapSupported() && (
-                  <Button size="large" variant="secondary" style={{ width: "100%" }} onClick={() => setShowBonusPaywall(true)}>
+                  <Button size="large" variant="weak" style={{ width: "100%" }} onClick={() => setShowBonusPaywall(true)}>
                     🎟 이용권 구매 ({bonusPackPrice})
                   </Button>
                 )}

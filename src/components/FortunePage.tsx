@@ -74,7 +74,7 @@ const FortunePage = ({ onNavigate, isPremium, onShowPremium }: FortunePageProps)
           </div>
           <div className="flex-1 text-left">
             <p className="text-sm font-semibold text-foreground">오늘 출석 안 했어요!</p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {attendance.streak > 0
                 ? `${attendance.streak}일 연속 중 — ${daysToNextReward(attendance.streak)}일 더 하면 무료 보너스!`
                 : "출석하고 보상 받기"}
@@ -91,11 +91,11 @@ const FortunePage = ({ onNavigate, isPremium, onShowPremium }: FortunePageProps)
         className="gradient-gold rounded-2xl p-5 mb-5"
       >
         <div className="flex items-center justify-between mb-2">
-          <span className="text-primary-foreground/80 text-sm font-medium">종합 운세</span>
-          <span className="text-primary-foreground font-extrabold text-2xl">{total}/25</span>
+          <span className="text-[hsl(var(--gold-foreground))] text-sm font-medium">종합 운세</span>
+          <span className="text-[hsl(var(--gold-foreground))] font-extrabold text-2xl">{total}/25</span>
         </div>
-        <p className="text-primary-foreground font-semibold">{overall}</p>
-        <p className="text-primary-foreground/60 text-xs mt-2">이 운세가 오늘의 행운 번호에 반영돼요 ✨</p>
+        <p className="text-[hsl(var(--gold-foreground))] font-semibold">{overall}</p>
+        <p className="text-[hsl(var(--gold-foreground))] text-xs mt-2">이 운세가 오늘의 행운 번호에 반영돼요 ✨</p>
       </motion.div>
 
       {/* Categories */}

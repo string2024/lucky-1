@@ -36,3 +36,25 @@ describe("출석 보상", () => {
     expect(getFreeBonusCount()).toBe(1);
   });
 });
+
+describe("인앱 결제 상품 ID", () => {
+  it("콘솔에 등록된 ait.* 형식 ID를 쓴다", async () => {
+    const { IAP_SKUS } = await import("@/lib/iap");
+    expect(IAP_SKUS.PREMIUM_PASS).toMatch(/^ait\.\d+\./);
+    expect(IAP_SKUS.BONUS_5PACK).toMatch(/^ait\.\d+\./);
+    expect(IAP_SKUS.PREMIUM_PASS).not.toBe(IAP_SKUS.BONUS_5PACK);
+  });
+});
+
+describe("프리미엄 패스 인식", () => {
+  it("저장 전에는 아니고, 새 상품 ID·예전 상품 코드로 저장되면 인정한다", async () => {
+    localStorage.clear();
+    const { hasPremiumPass, saveGrantedSku } = await import("@/lib/iapStorage");
+    expect(await hasPremiumPass()).toBe(false);
+    await saveGrantedSku("lucky1.premium.pass");
+    expect(await hasPremiumPass()).toBe(true);
+    localStorage.clear();
+    await saveGrantedSku("ait.0000022806.5d370157.7a0042f633.6059033179");
+    expect(await hasPremiumPass()).toBe(true);
+  });
+});

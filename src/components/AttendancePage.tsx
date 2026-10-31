@@ -70,9 +70,9 @@ const AttendancePage = ({ onCheckInSuccess }: AttendancePageProps) => {
         animate={{ opacity: 1, y: 0 }}
         className="gradient-gold rounded-2xl p-5 mb-5 text-center"
       >
-        <p className="text-primary-foreground/80 text-sm mb-1">연속 출석</p>
-        <p className="text-5xl font-extrabold text-primary-foreground">{info.streak}</p>
-        <p className="text-primary-foreground/80 text-sm mt-1">일</p>
+        <p className="text-[hsl(var(--gold-foreground))] text-sm mb-1">연속 출석</p>
+        <p className="text-5xl font-extrabold text-[hsl(var(--gold-foreground))]">{info.streak}</p>
+        <p className="text-[hsl(var(--gold-foreground))] text-sm mt-1">일</p>
       </motion.div>
 
       {/* Free bonus token indicator */}
@@ -83,7 +83,7 @@ const AttendancePage = ({ onCheckInSuccess }: AttendancePageProps) => {
           className="bg-card border border-primary/30 rounded-2xl p-4 mb-4 flex items-center gap-3"
         >
           <div className="w-10 h-10 rounded-full gradient-gold flex items-center justify-center">
-            <Gift size={18} className="text-primary-foreground" />
+            <Gift size={18} className="text-[hsl(var(--gold-foreground))]" />
           </div>
           <div className="flex-1">
             <p className="font-semibold text-foreground text-sm">무료 보너스 번호 {freeBonusCount}개</p>
@@ -104,7 +104,7 @@ const AttendancePage = ({ onCheckInSuccess }: AttendancePageProps) => {
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center mx-auto mb-1 text-xs font-semibold ${
                     completed
-                      ? "gradient-gold text-primary-foreground"
+                      ? "gradient-gold text-[hsl(var(--gold-foreground))]"
                       : isRewardDay
                       ? "bg-primary/20 text-primary border border-primary/40"
                       : "bg-muted text-muted-foreground"
@@ -112,7 +112,7 @@ const AttendancePage = ({ onCheckInSuccess }: AttendancePageProps) => {
                 >
                   {completed ? <Check size={14} /> : isRewardDay ? "🎁" : day}
                 </div>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {isRewardDay ? "보상" : REWARDS[day - 1]?.slice(0, 2)}
                 </span>
               </div>
@@ -134,7 +134,7 @@ const AttendancePage = ({ onCheckInSuccess }: AttendancePageProps) => {
                 <div className="w-12 h-12 rounded-full gradient-gold flex items-center justify-center text-xl mb-1">
                   {badge.icon}
                 </div>
-                <span className="text-[10px] text-muted-foreground">{badge.name}</span>
+                <span className="text-xs text-muted-foreground">{badge.name}</span>
               </div>
             ))}
           </div>
@@ -164,7 +164,7 @@ const AttendancePage = ({ onCheckInSuccess }: AttendancePageProps) => {
                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-xl mb-1">
                   {badge.icon}
                 </div>
-                <span className="text-[10px] text-muted-foreground">{badge.requirement}일</span>
+                <span className="text-xs text-muted-foreground">{badge.requirement}일</span>
               </div>
             ))}
           </div>
@@ -179,7 +179,7 @@ const AttendancePage = ({ onCheckInSuccess }: AttendancePageProps) => {
         className={`w-full py-4 rounded-xl font-bold text-lg ${
           info.checkedToday
             ? "bg-muted text-muted-foreground"
-            : "gradient-gold text-primary-foreground"
+            : "gradient-gold text-[hsl(var(--gold-foreground))]"
         }`}
       >
         {info.checkedToday ? "✅ 오늘 출석 완료!" : "🍀 출석 체크하기"}

@@ -17,8 +17,8 @@ const tabs: { id: Tab; label: string; icon: typeof Star }[] = [
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   return (
     <nav
-      className="mx-4 rounded-2xl bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100"
-      style={{ marginBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+      className="mx-3 mt-1 rounded-2xl bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100"
+      style={{ marginBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6px)' }}
     >
       <div className="flex">
         {tabs.map((tab) => {
@@ -28,8 +28,8 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-all duration-200 ${
-                isActive ? "text-amber-500" : "text-gray-400"
+              className={`flex-1 flex flex-col items-center py-2 gap-0.5 transition-all duration-200 ${
+                isActive ? "text-amber-500" : "text-gray-500"
               }`}
             >
               <div className={`relative flex items-center justify-center transition-transform duration-200 ${isActive ? "scale-110" : ""}`}>
@@ -38,7 +38,7 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
                   <span className="absolute -bottom-1.5 w-1 h-1 rounded-full bg-amber-500" />
                 )}
               </div>
-              <span className={`text-[10px] transition-all ${isActive ? "font-bold" : "font-normal"}`}>
+              <span className={`text-xs transition-all ${isActive ? "font-bold" : "font-normal"}`}>
                 {tab.label}
               </span>
             </button>

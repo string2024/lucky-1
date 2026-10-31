@@ -2,8 +2,9 @@ import { IAP } from '@apps-in-toss/web-framework';
 import { saveGrantedSku, saveBonusTokens } from './iapStorage';
 
 export const IAP_SKUS = {
-  PREMIUM_PASS: 'lucky1.premium.pass',
-  BONUS_5PACK:  'lucky1.bonus.5pack',
+  // 콘솔(수익화 > 인앱 결제)에 등록된 실제 상품 ID. 이름이 다르면 토스가 "상품을 살 수 없어요"를 띄운다.
+  PREMIUM_PASS: 'ait.0000022806.5d370157.7a0042f633.6059033179',
+  BONUS_5PACK:  'ait.0000022806.9ed6ace8.6da3707724.6059148298',
 } as const;
 
 export type IapSku = typeof IAP_SKUS[keyof typeof IAP_SKUS];

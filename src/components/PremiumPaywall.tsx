@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useCloseOnBack, sheetDragProps } from "@/lib/overlayBack";
 import { Button } from "@toss/tds-mobile";
 import { requestPurchase, IAP_SKUS, isIapSupported, getIapProducts } from "@/lib/iap";
 
@@ -9,6 +10,7 @@ interface PremiumPaywallProps {
 }
 
 const PremiumPaywall = ({ onSuccess, onClose }: PremiumPaywallProps) => {
+  useCloseOnBack(onClose);
   const [loading, setLoading] = useState(false);
   const [displayAmount, setDisplayAmount] = useState("3,300원");
   const cleanupRef = useRef<(() => void) | null>(null);
@@ -51,6 +53,7 @@ const PremiumPaywall = ({ onSuccess, onClose }: PremiumPaywallProps) => {
         initial={{ y: 100 }}
         animate={{ y: 0 }}
         exit={{ y: 100 }}
+        {...sheetDragProps(onClose)}
         className="bg-white rounded-t-3xl w-full px-6 pt-6 pb-10"
         onClick={(e) => e.stopPropagation()}
       >
@@ -81,7 +84,7 @@ const PremiumPaywall = ({ onSuccess, onClose }: PremiumPaywallProps) => {
         </div>
 
         <Button
-          size="lg"
+          size="large"
           onClick={handlePurchase}
           disabled={loading || !isIapSupported()}
           style={{ width: "100%" }}

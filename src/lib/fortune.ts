@@ -44,11 +44,16 @@ const MESSAGES: Record<string, string[][]> = {
   ],
 };
 
+// 날짜 같은 비슷한 숫자에서도 고르게 퍼지도록 섞어 주는 난수(mulberry32).
+// 예전 방식은 비슷한 날짜끼리 같은 번호(예: 22)가 계속 나왔다.
 function seededRandom(seed: number): () => number {
-  let s = seed;
+  let a = (Math.imul(seed >>> 0, 2654435761) ^ 0x9e3779b9) >>> 0;
   return () => {
-    s = (s * 16807 + 0) % 2147483647;
-    return s / 2147483647;
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
@@ -116,6 +121,11 @@ export function getNumberColor(num: number): string {
   if (num <= 30) return "hsl(0, 75%, 55%)";
   if (num <= 40) return "hsl(0, 0%, 50%)";
   return "hsl(142, 60%, 45%)";
+}
+
+/** 구슬 위 숫자 색: 노란 구슬(1~10)은 흰 글자가 안 보여서 진한 갈색 */
+export function getNumberTextColor(num: number): string {
+  return num <= 10 ? "hsl(40, 80%, 15%)" : "#ffffff";
 }
 
 export function getTotalScore(fortunes: FortuneCategory[]): number {

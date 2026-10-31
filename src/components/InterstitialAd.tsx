@@ -72,7 +72,10 @@ export function useTabSwitchAd() {
 
   const closeAd = useCallback(() => setShowAd(false), []);
 
-  return { showAd, showAdNotice, onTabSwitch, closeAd, onNoticeComplete };
+  // 안내창만 닫는다(광고는 보지 않고 넘어간다)
+  const dismissNotice = useCallback(() => setShowAdNotice(false), []);
+
+  return { showAd, showAdNotice, onTabSwitch, closeAd, onNoticeComplete, dismissNotice };
 }
 
 export default InterstitialAd;

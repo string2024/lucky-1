@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { closeView } from "@apps-in-toss/web-framework";
+import { closeView, graniteEvent } from "@apps-in-toss/web-framework";
+import { closeTopOverlay } from "@/lib/overlayBack";
 import FortunePage from "@/components/FortunePage";
 import LottoPage from "@/components/LottoPage";
 import AttendancePage from "@/components/AttendancePage";
@@ -19,9 +20,11 @@ type Tab = "fortune" | "lotto" | "attendance" | "saved";
 const AdUpsellNotice = ({
   onWatchAd,
   onPremium,
+  onDismiss,
 }: {
   onWatchAd: () => void;
   onPremium?: () => void;
+  onDismiss: () => void;
 }) => {
   const showPremiumOption = onPremium && isIapSupported();
 
@@ -31,11 +34,19 @@ const AdUpsellNotice = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center"
+      onClick={onDismiss}
     >
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 40, opacity: 0 }}
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.6 }}
+        onDragEnd={(_, info) => {
+          if (info.offset.y > 80 || info.velocity.y > 500) onDismiss();
+        }}
+        onClick={(e) => e.stopPropagation()}
         className="bg-white rounded-t-3xl w-full px-6 pt-5 pb-8"
       >
         <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
@@ -62,6 +73,12 @@ const AdUpsellNotice = ({
               >
                 광고 보기
               </button>
+              <button
+                onClick={onDismiss}
+                className="w-full py-2 text-xs text-gray-500"
+              >
+                닫기
+              </button>
             </div>
           </>
         ) : (
@@ -78,6 +95,12 @@ const AdUpsellNotice = ({
             >
               확인
             </button>
+            <button
+              onClick={onDismiss}
+              className="w-full py-2 mt-1 text-xs text-gray-500"
+            >
+              닫기
+            </button>
           </>
         )}
       </motion.div>
@@ -91,10 +114,9 @@ const Index = () => {
   const [showSaveAdNotice, setShowSaveAdNotice] = useState(false);
   const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
   const [pendingSave, setPendingSave] = useState<(() => void) | null>(null);
-  const [pendingTab, setPendingTab] = useState<Tab | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("fortune");
   const [isPremium, setIsPremium] = useState(false);
-  const { showAd: showTabAd, showAdNotice: showTabAdNotice, onTabSwitch, closeAd: closeTabAd, onNoticeComplete } = useTabSwitchAd();
+  const { showAd: showTabAd, showAdNotice: showTabAdNotice, onTabSwitch, closeAd: closeTabAd, onNoticeComplete, dismissNotice: dismissTabNotice } = useTabSwitchAd();
 
   useEffect(() => {
     hasPremiumPass().then(setIsPremium);
@@ -102,22 +124,30 @@ const Index = () => {
     recoverPendingOrders().then(() => hasPremiumPass().then(setIsPremium));
   }, []);
 
-  // 뒤로가기(popstate) 시 메인 탭이면 closeView로 미니앱 종료
+  // 시스템 뒤로가기: 열린 창 → 다른 탭 → 운세 탭 순서로 닫고, 운세 탭에서만 미니앱을 종료한다
+  const backStateRef = useRef({ activeTab, showPremiumPaywall, showSaveAdNotice, showTabAdNotice });
+  backStateRef.current = { activeTab, showPremiumPaywall, showSaveAdNotice, showTabAdNotice };
+
   useEffect(() => {
-    window.history.pushState({ miniapp: true }, "");
-
-    const handlePopState = () => {
-      if (activeTab !== "fortune") {
-        setActiveTab("fortune");
-        window.history.pushState({ miniapp: true }, "");
-      } else {
-        closeView();
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [activeTab]);
+    const unsubscribe = graniteEvent.addEventListener("backEvent", {
+      onEvent: () => {
+        const { activeTab: tab, showSaveAdNotice: saveNotice, showTabAdNotice: tabNotice } = backStateRef.current;
+        if (closeTopOverlay()) {
+          // 결제 안내 창이 떠 있으면 그 창만 닫는다
+        } else if (saveNotice) {
+          setShowSaveAdNotice(false);
+          setPendingSave(null);
+        } else if (tabNotice) {
+          dismissTabNotice();
+        } else if (tab !== "fortune") {
+          setActiveTab("fortune");
+        } else {
+          closeView();
+        }
+      },
+    });
+    return unsubscribe;
+  }, []);
 
   const handleSplashDone = () => setShowSplash(false);
 
@@ -139,6 +169,12 @@ const Index = () => {
     setShowInterstitial(true);
   };
 
+  // 저장 광고 직전 업셀 — 닫기(저장 취소)
+  const handleSaveAdNoticeDismiss = () => {
+    setShowSaveAdNotice(false);
+    setPendingSave(null);
+  };
+
   // 저장 광고 직전 업셀 — "프리미엄" 선택
   const handleSaveAdNoticePremium = () => {
     setShowSaveAdNotice(false);
@@ -151,10 +187,6 @@ const Index = () => {
       pendingSave();
       setPendingSave(null);
     }
-    if (pendingTab) {
-      setActiveTab(pendingTab);
-      setPendingTab(null);
-    }
   };
 
   // 출석 체크 성공 시 인터스티셜 (프리미엄 제외)
@@ -163,16 +195,8 @@ const Index = () => {
     if (!premium) setShowInterstitial(true);
   };
 
-  // 운세→번호 이동: 비프리미엄은 광고 후 이동, 프리미엄은 즉시 이동
-  const handleFortuneNavigate = async (tab: "lotto" | "attendance") => {
-    if (tab === "lotto") {
-      const premium = await hasPremiumPass();
-      if (!premium) {
-        setPendingTab("lotto");
-        setShowInterstitial(true);
-        return;
-      }
-    }
+  // 운세→번호/출석 이동: 사용자가 누른 버튼의 결과를 바로 보여 준다(예고 없는 전면 광고 없음)
+  const handleFortuneNavigate = (tab: "lotto" | "attendance") => {
     setActiveTab(tab);
   };
 
@@ -192,8 +216,9 @@ const Index = () => {
 
   // 탭 전환 광고 직전 업셀 — "프리미엄" 선택
   const handleTabAdNoticePremium = () => {
-    // 탭 전환 광고 취소 + 프리미엄 페이월 오픈
+    // 탭 전환 광고 취소(안내창도 닫음) + 프리미엄 페이월 오픈
     closeTabAd();
+    dismissTabNotice();
     setShowPremiumPaywall(true);
   };
 
@@ -216,6 +241,7 @@ const Index = () => {
           <AdUpsellNotice
             onWatchAd={handleSaveAdNoticeDone}
             onPremium={!isPremium ? handleSaveAdNoticePremium : undefined}
+            onDismiss={handleSaveAdNoticeDismiss}
           />
         )}
       </AnimatePresence>
@@ -240,6 +266,7 @@ const Index = () => {
           <AdUpsellNotice
             onWatchAd={handleTabAdNoticeDone}
             onPremium={!isPremium ? handleTabAdNoticePremium : undefined}
+            onDismiss={dismissTabNotice}
           />
         )}
       </AnimatePresence>

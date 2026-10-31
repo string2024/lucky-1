@@ -13,6 +13,14 @@ export default {
       },
     },
     extend: {
+      // 토스 앱 본문(15~17px)에 맞춰 전체 글자를 키운다. 기존 12/14/16px → 13.5/15.5/17px
+      fontSize: {
+        xs: ["0.84375rem", { lineHeight: "1.25rem" }],
+        sm: ["0.96875rem", { lineHeight: "1.45rem" }],
+        base: ["1.0625rem", { lineHeight: "1.6rem" }],
+        lg: ["1.1875rem", { lineHeight: "1.7rem" }],
+        xl: ["1.3125rem", { lineHeight: "1.8rem" }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
