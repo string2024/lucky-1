@@ -18,7 +18,7 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   return (
     <nav
       className="mx-3 mt-1 rounded-2xl bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100"
-      style={{ marginBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6px)' }}
+      style={{ marginBottom: '8px' }}
     >
       <div className="flex">
         {tabs.map((tab) => {

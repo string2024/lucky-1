@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { TossAds } from "@apps-in-toss/web-framework";
-import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 
 const LIVE_AD_GROUP_ID = "ait.v2.live.cbe71145d9ae4ab3";
 // 콘솔 QR 테스트 주소(*.private-*)에서는 공식 테스트 배너 ID를 쓴다. 출시 주소에서는 실제 ID를 쓴다.
@@ -12,16 +11,14 @@ interface BannerAdProps {
   isPremium?: boolean;
 }
 
-const BannerAd = ({ isPremium: isPremiumProp }: BannerAdProps) => {
-  const { isPremium: isPremiumStored, loading } = usePremiumStatus();
-  const isPremium = isPremiumProp ?? isPremiumStored;
+const BannerAd = ({ isPremium = false }: BannerAdProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  // 보여 줄 광고가 없거나 그리지 못하면 빈 회색 띠가 남지 않게 자리를 접는다
+  // 보여 줄 광고가 없거나 그리지 못하면 빈 띠가 남지 않게 자리를 접는다
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    if (loading || isPremium) return;
+    if (isPremium) return;
     if (!TossAds.initialize.isSupported?.()) return;
 
     TossAds.initialize({
@@ -32,10 +29,10 @@ const BannerAd = ({ isPremium: isPremiumProp }: BannerAdProps) => {
         },
       },
     });
-  }, [loading, isPremium]);
+  }, [isPremium]);
 
   useEffect(() => {
-    if (loading || isPremium) return;
+    if (isPremium) return;
     if (!isInitialized || !containerRef.current) return;
     if (!TossAds.attachBanner.isSupported?.()) return;
 
@@ -56,9 +53,9 @@ const BannerAd = ({ isPremium: isPremiumProp }: BannerAdProps) => {
     });
 
     return () => { result?.destroy(); };
-  }, [isInitialized, loading, isPremium]);
+  }, [isInitialized, isPremium]);
 
-  if (loading || isPremium || collapsed) return null;
+  if (isPremium || collapsed) return null;
 
   return (
     <div className="w-full shrink-0 bg-background" style={{ height: "102px" }}>
